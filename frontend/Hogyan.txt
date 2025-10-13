@@ -1,0 +1,8 @@
+cd szoft_szinhaz/frontend
+npm install
+npm start
+
+Ha nem megy akk:
+(Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned) --- ez csak ha az ez alatt lévőkkel se megy, elv
+npm install -g npm@11.6.2
+npm start
