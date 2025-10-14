@@ -1,4 +1,8 @@
 cd szoft_szinhaz/frontend
+Ellenőrizd, hogy ezek telepítve vannak:
+
+Node.js
+👉 töltsd le innen: https://nodejs.org/
 npm install
 npm start
 
