@@ -1,6 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { FaBars } from 'react-icons/fa';
 import theaterImg from './assets/theater.jpg';
+import theater1 from './assets/theater1.jpg';
+import theater2 from './assets/theater2.jpg';
+import theater3 from './assets/theater3.jpg';
 
 export default function ReservationPage() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -10,7 +13,27 @@ export default function ReservationPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [message, setMessage] = useState(''); // siker/hiba üzenet
+  const [message, setMessage] = useState('');
+
+  const menuRef = useRef(null);
+  const iconRef = useRef(null);
+
+  // Bezárás, ha bárhová kattintunk az oldalon a menün kívül
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        menuOpen &&
+        menuRef.current &&
+        iconRef.current &&
+        !menuRef.current.contains(event.target) &&
+        !iconRef.current.contains(event.target)
+      ) {
+        setMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [menuOpen]);
 
   const handleSelectChange = (theater) => {
     setSelectedTheater(theater);
@@ -30,25 +53,21 @@ export default function ReservationPage() {
           : 'https://your-backend.com/login',
         {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email, password }),
         }
       );
-
       const data = await response.json();
 
       if (data.success) {
         setMessage(isRegister ? 'Regisztráció sikeres!' : 'Bejelentkezés sikeres!');
-        // Például a token mentése: localStorage.setItem('token', data.token);
         setTimeout(() => {
           setModalOpen(false);
           setEmail('');
           setPassword('');
           setConfirmPassword('');
           setMessage('');
-        }, 1500); // 1,5 mp után bezáródik a modal
+        }, 1500);
       } else {
         setMessage(data.message || 'Hiba történt');
       }
@@ -96,6 +115,7 @@ export default function ReservationPage() {
       >
         {/* Tetején sötétszürke sáv */}
         <nav
+          ref={menuRef} // referenciát adunk a nav-nak
           style={{
             backgroundColor: '#333333',
             display: 'flex',
@@ -109,6 +129,7 @@ export default function ReservationPage() {
           }}
         >
           <FaBars
+            ref={iconRef} // ikon
             size={24}
             onClick={() => setMenuOpen(!menuOpen)}
             style={{ cursor: 'pointer' }}
@@ -134,15 +155,15 @@ export default function ReservationPage() {
         {/* Legördülő menü a nav alatt */}
         {menuOpen && (
           <div
+            ref={menuRef}
             style={{
+              position: 'absolute',
+              top: '40px',
+              left: '20px',
               backgroundColor: '#333333',
               borderRadius: '6px',
               overflow: 'hidden',
               boxShadow: '0 4px 6px rgba(0,0,0,0.3)',
-              marginTop: '0',
-              position: 'absolute',
-              top: '40px',
-              left: '20px',
               zIndex: 2,
             }}
           >
@@ -163,6 +184,71 @@ export default function ReservationPage() {
             ))}
           </div>
         )}
+
+        {/* Üres rész - három kártya */}
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            padding: '20px',
+            marginTop: '20px',
+            flex: 1,
+            marginBottom: '20px',
+          }}
+        >
+          {[{ img: theater1, name: 'Csokonai Színház' },
+            { img: theater2, name: 'Vojtina Színház' },
+            { img: theater3, name: 'Debreceni Vidám Színház' }].map((theater, i) => (
+            <div
+              key={i}
+              style={{
+                flex: '1',
+                margin: '0 10px',
+                backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                borderRadius: '10px',
+                color: 'white',
+                padding: '10px',
+                textAlign: 'center',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'flex-end',
+                overflow: 'hidden',
+                transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-10px)';
+                e.currentTarget.style.boxShadow = '0 10px 20px rgba(0,0,0,0.5)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = 'none';
+              }}
+            >
+              <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <img
+                  src={theater.img}
+                  alt={theater.name}
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover',
+                    borderRadius: '10px',
+                  }}
+                />
+              </div>
+              <div
+                style={{
+                  backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                  padding: '10px 5px',
+                }}
+              >
+                <p style={{ margin: 0, fontSize: '20px', fontWeight: 'bold' }}>
+                  {theater.name}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
 
         {/* Modal felugró ablak */}
         {modalOpen && (
@@ -238,7 +324,6 @@ export default function ReservationPage() {
                 }}
               />
 
-              {/* Csak regisztrációnál jelszó megerősítés */}
               {isRegister && (
                 <input
                   type="password"
@@ -255,7 +340,6 @@ export default function ReservationPage() {
                 />
               )}
 
-              {/* Siker/hiba üzenet */}
               {message && (
                 <p style={{ color: 'lightcoral', textAlign: 'center', marginBottom: '10px' }}>
                   {message}
