@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="1962099e-fe4e-4f4e-8788-7d5c1685c72d" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/backend/src/main/resources/org/theater/bookingtheater/hello-view.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/resources/fxml/hello-view.fxml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/backend/pom.xml" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Class" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
+  "lastFilter": {
+    "state": "OPEN",
+    "assignee": "Hatdeenfiuvagyok"
+  }
+}]]></component>
+  <component name="GithubPullRequestsUISettings"><![CDATA[{
+  "selectedUrlAndAccountId": {
+    "url": "https://github.com/Hatdeenfiuvagyok/Szoft_Szinhaz",
+    "accountId": "0b30c183-a2b2-4bac-b1fc-86558a82bb1c"
+  }
+}]]></component>
+  <component name="MavenImportPreferences">
+    <option name="generalSettings">
+      <MavenGeneralSettings>
+        <option name="mavenHomeTypeForPersistence" value="WRAPPER" />
+      </MavenGeneralSettings>
+    </option>
+    <option name="importingSettings">
+      <MavenImportingSettings>
+        <option name="jdkForImporter" value="ms-17" />
+      </MavenImportingSettings>
+    </option>
+  </component>
+  <component name="ProjectColorInfo"><![CDATA[{
+  "associatedIndex": 4
+}]]></component>
+  <component name="ProjectId" id="34MxgiBFoAewMo4hSydNmu8Mvzd" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Maven.backend [clean].executor": "Run",
+    "Maven.backend [compile].executor": "Run",
+    "Maven.backend [deploy].executor": "Run",
+    "Maven.backend [install].executor": "Run",
+    "Maven.backend [package].executor": "Run",
+    "Maven.backend [site].executor": "Run",
+    "Maven.backend [test].executor": "Run",
+    "Maven.backend [validate].executor": "Run",
+    "Maven.backend [verify].executor": "Run",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "git-widget-placeholder": "david__branch",
+    "ignore.virus.scanning.warn.message": "true",
+    "kotlin-language-version-configured": "true",
+    "project.structure.last.edited": "Project",
+    "project.structure.proportion": "0.15",
+    "project.structure.side.proportion": "0.15747127",
+    "settings.editor.selected.configurable": "reference.settings.project.maven.importing"
+  }
+}]]></component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\Asus\IdeaProjects\Szoft_Szinhaz_d\backend" />
+      <recent name="C:\Users\Asus\IdeaProjects\Szoft_Szinhaz_d\backend\src\main\resources\fxml" />
+      <recent name="C:\Users\Asus\IdeaProjects\Szoft_Szinhaz_d\backend\src\main\resources" />
+      <recent name="C:\Users\Asus\IdeaProjects\Szoft_Szinhaz_d\backend\src\main\java\org\theater\bookingtheater\controller" />
+      <recent name="C:\Users\Asus\IdeaProjects\Szoft_Szinhaz_d\backend\src\main\java\org\theater\bookingtheater\service" />
+    </key>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="1962099e-fe4e-4f4e-8788-7d5c1685c72d" name="Changes" comment="" />
+      <created>1761037356573</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1761037356573</updated>
+    </task>
+    <servers />
+  </component>
+</project>
