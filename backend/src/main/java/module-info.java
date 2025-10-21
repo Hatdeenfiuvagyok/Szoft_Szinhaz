@@ -10,6 +10,8 @@ module org.theater.bookingtheater {
     requires org.kordamp.bootstrapfx.core;
     requires eu.hansolo.tilesfx;
     requires com.almasb.fxgl.all;
+    requires spring.boot.autoconfigure;
+    requires spring.boot;
 
     opens org.theater.bookingtheater to javafx.fxml;
     exports org.theater.bookingtheater;
