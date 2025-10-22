@@ -11,6 +11,7 @@ export default function Layout({ children }) {
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [message, setMessage] = useState('');
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
 
     const navRef = useRef(null);
     const menuRef = useRef(null);
@@ -35,6 +36,114 @@ export default function Layout({ children }) {
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, [menuOpen]);
+
+    // API hívás - Bejelentkezés
+    const handleLogin = async () => {
+        if (!email || !password) {
+            setMessage('Kérjük, töltsd ki mindkét mezőt!');
+            return;
+        }
+
+        try {
+            const response = await fetch('http://localhost:8080/api/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email, password }),
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                setMessage(data.message);
+                setIsLoggedIn(true);
+                // 2 másodperc után bezárjuk a modalt
+                setTimeout(() => {
+                    setModalOpen(false);
+                    setMessage('');
+                    setEmail('');
+                    setPassword('');
+                    setConfirmPassword('');
+                }, 2000);
+            } else {
+                setMessage(data.message);
+            }
+        } catch (error) {
+            console.error('Bejelentkezési hiba:', error);
+            setMessage('Hálózati hiba történt. Próbáld újra később.');
+        }
+    };
+
+    // API hívás - Regisztráció
+    const handleRegister = async () => {
+        if (!email || !password || !confirmPassword) {
+            setMessage('Kérjük, töltsd ki minden mezőt!');
+            return;
+        }
+
+        if (password !== confirmPassword) {
+            setMessage('A jelszavak nem egyeznek!');
+            return;
+        }
+
+        if (password.length < 6) {
+            setMessage('A jelszónak legalább 6 karakter hosszúnak kell lennie!');
+            return;
+        }
+
+        try {
+            const response = await fetch('http://localhost:8080/api/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email, password }),
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                setMessage(data.message);
+                // Sikeres regisztráció után váltunk bejelentkezésre
+                setTimeout(() => {
+                    setIsRegister(false);
+                    setMessage('');
+                }, 2000);
+            } else {
+                setMessage(data.message);
+            }
+        } catch (error) {
+            console.error('Regisztrációs hiba:', error);
+            setMessage('Hálózati hiba történt. Próbáld újra később.');
+        }
+    };
+
+    // Form submit kezelése
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        if (isRegister) {
+            handleRegister();
+        } else {
+            handleLogin();
+        }
+    };
+
+    // Modal bezárásakor mezők resetelése
+    const handleModalClose = () => {
+        setModalOpen(false);
+        setMessage('');
+        setEmail('');
+        setPassword('');
+        setConfirmPassword('');
+    };
+
+    // Kijelentkezés
+    const handleLogout = () => {
+        setIsLoggedIn(false);
+        setMessage('Sikeres kijelentkezés!');
+        setTimeout(() => setMessage(''), 3000);
+    };
 
     return (
         <div
@@ -91,13 +200,13 @@ export default function Layout({ children }) {
                         size={26}
                         onClick={() => setMenuOpen(!menuOpen)}
                         onMouseEnter={(e) => {
-                            e.currentTarget.style.color = '#cccccc';      // világosabb ikon
-                            e.currentTarget.style.transform = 'scale(1.15)'; // kicsit nagyobb
+                            e.currentTarget.style.color = '#cccccc';
+                            e.currentTarget.style.transform = 'scale(1.15)';
                             e.currentTarget.style.transition = 'all 0.2s ease';
                         }}
                         onMouseLeave={(e) => {
-                            e.currentTarget.style.color = 'white';        // vissza fehérre
-                            e.currentTarget.style.transform = 'scale(1)'; // vissza normál méretre
+                            e.currentTarget.style.color = 'white';
+                            e.currentTarget.style.transform = 'scale(1)';
                         }}
                         style={{
                             cursor: 'pointer',
@@ -106,30 +215,64 @@ export default function Layout({ children }) {
                         }}
                     />
 
-                    <button
-                        onClick={() => setModalOpen(true)}
-                        onMouseEnter={(e) => {
-                            e.currentTarget.style.backgroundColor = '#777777'; // világosabb szürke
-                            e.currentTarget.style.transform = 'scale(1.05)'; // picit nagyobb
-                            e.currentTarget.style.transition = 'all 0.2s ease';
-                        }}
-                        onMouseLeave={(e) => {
-                            e.currentTarget.style.backgroundColor = '#555555'; // vissza az eredeti
-                            e.currentTarget.style.transform = 'scale(1)';
-                        }}
-                        style={{
-                            padding: '5px 15px',
-                            borderRadius: '6px',
-                            border: 'none',
-                            backgroundColor: '#555555',
-                            color: 'white',
-                            cursor: 'pointer',
-                            fontSize: '16px',
-                            transition: 'all 0.2s ease',
-                        }}
-                    >
-                        Bejelentkezés
-                    </button>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        {isLoggedIn && (
+                            <span style={{ marginRight: '10px' }}>
+                                Bejelentkezve: {email}
+                            </span>
+                        )}
+                        {isLoggedIn ? (
+                            <button
+                                onClick={handleLogout}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.backgroundColor = '#777777';
+                                    e.currentTarget.style.transform = 'scale(1.05)';
+                                    e.currentTarget.style.transition = 'all 0.2s ease';
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.backgroundColor = '#555555';
+                                    e.currentTarget.style.transform = 'scale(1)';
+                                }}
+                                style={{
+                                    padding: '5px 15px',
+                                    borderRadius: '6px',
+                                    border: 'none',
+                                    backgroundColor: '#555555',
+                                    color: 'white',
+                                    cursor: 'pointer',
+                                    fontSize: '16px',
+                                    transition: 'all 0.2s ease',
+                                }}
+                            >
+                                Kijelentkezés
+                            </button>
+                        ) : (
+                            <button
+                                onClick={() => setModalOpen(true)}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.backgroundColor = '#777777';
+                                    e.currentTarget.style.transform = 'scale(1.05)';
+                                    e.currentTarget.style.transition = 'all 0.2s ease';
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.backgroundColor = '#555555';
+                                    e.currentTarget.style.transform = 'scale(1)';
+                                }}
+                                style={{
+                                    padding: '5px 15px',
+                                    borderRadius: '6px',
+                                    border: 'none',
+                                    backgroundColor: '#555555',
+                                    color: 'white',
+                                    cursor: 'pointer',
+                                    fontSize: '16px',
+                                    transition: 'all 0.2s ease',
+                                }}
+                            >
+                                Bejelentkezés
+                            </button>
+                        )}
+                    </div>
                 </nav>
 
                 {/* Legördülő menü */}
@@ -161,12 +304,12 @@ export default function Layout({ children }) {
                                     navigate(item.path);
                                 }}
                                 onMouseEnter={(e) => {
-                                    e.currentTarget.style.backgroundColor = '#555555'; // világosabb háttér
-                                    e.currentTarget.style.transform = 'translateX(5px)'; // kicsit elmozdul
+                                    e.currentTarget.style.backgroundColor = '#555555';
+                                    e.currentTarget.style.transform = 'translateX(5px)';
                                     e.currentTarget.style.transition = 'all 0.2s ease';
                                 }}
                                 onMouseLeave={(e) => {
-                                    e.currentTarget.style.backgroundColor = '#333333'; // vissza alap
+                                    e.currentTarget.style.backgroundColor = '#333333';
                                     e.currentTarget.style.transform = 'translateX(0)';
                                 }}
                                 style={{
@@ -181,6 +324,24 @@ export default function Layout({ children }) {
                                 {item.name}
                             </div>
                         ))}
+                    </div>
+                )}
+
+                {/* Üzenet megjelenítése */}
+                {message && !modalOpen && (
+                    <div
+                        style={{
+                            position: 'fixed',
+                            top: '50px',
+                            right: '20px',
+                            backgroundColor: 'rgba(0,0,0,0.8)',
+                            color: 'white',
+                            padding: '10px 20px',
+                            borderRadius: '5px',
+                            zIndex: 1000,
+                        }}
+                    >
+                        {message}
                     </div>
                 )}
 
@@ -214,7 +375,7 @@ export default function Layout({ children }) {
                             }}
                         >
                             <button
-                                onClick={() => setModalOpen(false)}
+                                onClick={handleModalClose}
                                 style={{
                                     position: 'absolute',
                                     top: '10px',
@@ -233,75 +394,79 @@ export default function Layout({ children }) {
                                 {isRegister ? 'Regisztráció' : 'Bejelentkezés'}
                             </h2>
 
-                            <input
-                                type="email"
-                                placeholder="Email"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                style={{
-                                    width: '100%',
-                                    padding: '10px',
-                                    marginBottom: '10px',
-                                    borderRadius: '5px',
-                                    border: 'none',
-                                }}
-                            />
-
-                            <input
-                                type="password"
-                                placeholder="Jelszó"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                style={{
-                                    width: '100%',
-                                    padding: '10px',
-                                    marginBottom: isRegister ? '10px' : '15px',
-                                    borderRadius: '5px',
-                                    border: 'none',
-                                }}
-                            />
-
-                            {isRegister && (
+                            <form onSubmit={handleSubmit}>
                                 <input
-                                    type="password"
-                                    placeholder="Jelszó újra"
-                                    value={confirmPassword}
-                                    onChange={(e) => setConfirmPassword(e.target.value)}
+                                    type="email"
+                                    placeholder="Email"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
                                     style={{
                                         width: '100%',
                                         padding: '10px',
-                                        marginBottom: '15px',
+                                        marginBottom: '10px',
                                         borderRadius: '5px',
                                         border: 'none',
                                     }}
                                 />
-                            )}
 
-                            {message && (
-                                <p style={{ color: 'lightcoral', textAlign: 'center', marginBottom: '10px' }}>
-                                    {message}
-                                </p>
-                            )}
+                                <input
+                                    type="password"
+                                    placeholder="Jelszó"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    style={{
+                                        width: '100%',
+                                        padding: '10px',
+                                        marginBottom: isRegister ? '10px' : '15px',
+                                        borderRadius: '5px',
+                                        border: 'none',
+                                    }}
+                                />
 
-                            <button
-                                style={{
-                                    width: '100%',
-                                    padding: '10px',
-                                    borderRadius: '6px',
-                                    border: 'none',
-                                    backgroundColor: '#555555',
-                                    color: 'white',
-                                    cursor: 'pointer',
-                                    fontSize: '16px',
-                                }}
-                            >
-                                {isRegister ? 'Regisztráció' : 'Bejelentkezés'}
-                            </button>
+                                {isRegister && (
+                                    <input
+                                        type="password"
+                                        placeholder="Jelszó újra"
+                                        value={confirmPassword}
+                                        onChange={(e) => setConfirmPassword(e.target.value)}
+                                        style={{
+                                            width: '100%',
+                                            padding: '10px',
+                                            marginBottom: '15px',
+                                            borderRadius: '5px',
+                                            border: 'none',
+                                        }}
+                                    />
+                                )}
+
+                                {message && (
+                                    <p style={{ color: 'lightcoral', textAlign: 'center', marginBottom: '10px' }}>
+                                        {message}
+                                    </p>
+                                )}
+
+                                <button
+                                    type="submit"
+                                    style={{
+                                        width: '100%',
+                                        padding: '10px',
+                                        borderRadius: '6px',
+                                        border: 'none',
+                                        backgroundColor: '#555555',
+                                        color: 'white',
+                                        cursor: 'pointer',
+                                        fontSize: '16px',
+                                    }}
+                                >
+                                    {isRegister ? 'Regisztráció' : 'Bejelentkezés'}
+                                </button>
+                            </form>
 
                             <p
                                 onClick={() => {
                                     setIsRegister(!isRegister);
                                     setMessage('');
+                                    setConfirmPassword('');
                                 }}
                                 style={{
                                     marginTop: '15px',
