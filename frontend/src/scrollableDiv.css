@@ -1,0 +1,24 @@
+.scrollableDiv::-webkit-scrollbar {
+    width: 10px;
+}
+
+.scrollableDiv::-webkit-scrollbar-track {
+    background: rgba(50, 50, 50, 0.3); /* a táblázathoz hasonló sötét szürke */
+    border-radius: 5px;
+}
+
+.scrollableDiv::-webkit-scrollbar-thumb {
+    background-color: rgba(100, 100, 100, 0.8); /* közép-szürke a csúszka */
+    border-radius: 5px;
+    border: 2px solid rgba(50, 50, 50, 0.5); /* kis keret, hogy kiemelkedjen */
+}
+
+.scrollableDiv::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(150, 150, 150, 0.8); /* világosabb szürke hoverkor */
+}
+
+/* Firefox */
+.scrollableDiv {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(100,100,100,0.8) rgba(50,50,50,0.3);
+}

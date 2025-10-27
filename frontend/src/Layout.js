@@ -1,6 +1,7 @@
 import React, {useState} from 'react';
 import {useNavigate} from 'react-router-dom';
 import theaterImg from './assets/theater.jpg';
+import { useIsLoggedIn } from './useIsLoggedIn';
 
 export default function Layout({children}) {
     const [modalOpen, setModalOpen] = useState(false);
@@ -9,7 +10,7 @@ export default function Layout({children}) {
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [message, setMessage] = useState('');
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [isLoggedIn, setIsLoggedIn] = useIsLoggedIn();
 
     const navigate = useNavigate();
 
@@ -28,6 +29,7 @@ export default function Layout({children}) {
             if (data.success) {
                 setMessage(data.message);
                 setIsLoggedIn(true);
+                localStorage.setItem('isLoggedIn', 'true');
                 setTimeout(() => {
                     setModalOpen(false);
                     setMessage('');
@@ -90,6 +92,7 @@ export default function Layout({children}) {
 
     const handleLogout = () => {
         setIsLoggedIn(false);
+        localStorage.removeItem('isLoggedIn');
         setMessage('Sikeres kijelentkezés!');
         setTimeout(() => setMessage(''), 3000);
     };
@@ -228,9 +231,7 @@ export default function Layout({children}) {
 
                 {/* Oldal tartalom */}
                 <div style={{flex: 1}}>
-                    {React.Children.map(children, (child) =>
-                        React.isValidElement(child) ? React.cloneElement(child, {isLoggedIn}) : child
-                    )}
+                    {children}
                 </div>
 
                 {/* Modal */}
