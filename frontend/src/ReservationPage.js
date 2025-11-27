@@ -323,8 +323,15 @@ export default function ReservationPage() {
 
 function generateSeatLayout(totalSeats) {
 
-    const centerRows = 10;
-    const centerPerRow = 14;
+    const centerRowSizes = [8, 8, 10, 10, 12, 12, 14, 14, 16, 16];
+
+    const center = centerRowSizes.map((seatCount, rowIndex) =>
+        Array.from({ length: seatCount }, (_, i) => ({
+            id: `C-${rowIndex + 1}-${i + 1}`,
+            label: i + 1,
+            status: 'available',
+        }))
+    );
 
     const galleryRows = 6;
     const galleryPerRow = 5;
@@ -338,11 +345,6 @@ function generateSeatLayout(totalSeats) {
             label: i + 1,
             status,
         }));
-
-    const center = [];
-    for (let r = 0; r < centerRows; r++) {
-        center.push(makeRow('C', r, centerPerRow, 'available'));
-    }
 
     const left = [];
     const right = [];
@@ -361,20 +363,17 @@ function SeatRow({ row, alignment, offset, onSeatClick, selectedSeats }) {
 
     let rowStyle = {
         display: 'flex',
-        justifyContent: isCenter ? 'center' : alignment,
+        justifyContent: 'center',     // minden sor középen legyen
+        flexDirection: 'row',         // vízszintesen legyenek
         marginBottom: 4,
     };
 
     if (alignment === 'right') {
         rowStyle.transform = `rotate(12deg)`;
-        rowStyle.transformOrigin = `right center`;
-        rowStyle.marginTop = offset * 4;
     }
 
     if (alignment === 'left') {
         rowStyle.transform = `rotate(-12deg)`;
-        rowStyle.transformOrigin = `left center`;
-        rowStyle.marginTop = offset * 4;
     }
 
     return (
@@ -467,7 +466,7 @@ const modalOverlayStyle = {
 
 const modalContainerStyle = {
     display: 'flex',
-    width: '80%',
+    width: '100%',
     maxWidth: '1000px',
     maxHeight: '85%',
     backgroundColor: '#222',
@@ -486,7 +485,7 @@ const leftColumnStyle = {
 };
 
 const rightColumnStyle = {
-    flex: '0 0 70%',
+    flex: '0 0 69%',
     paddingLeft: '15px',
     display: 'flex',
     flexDirection: 'column',
@@ -505,7 +504,7 @@ const leftGalleryStyle = {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
-    marginTop: '50px',
+    marginTop: '45px',
 };
 
 const rightGalleryStyle = {
@@ -513,7 +512,7 @@ const rightGalleryStyle = {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
-    marginTop: '50px',
+    marginTop: '45px',
 };
 
 const centerBlockStyle = {
