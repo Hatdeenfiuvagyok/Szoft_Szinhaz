@@ -4,6 +4,7 @@ import './App.css';
 import theaterImg from './assets/theater.jpg';
 import HomePage from './HomePage';
 import ReservationPage from './ReservationPage';
+import { AuthProvider } from './AuthContext';
 
 function Home() {
     const navigate = useNavigate();
@@ -63,13 +64,15 @@ function Home() {
 
 function App() {
     return (
-        <Router>
-            <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/home" element={<HomePage />} />
-                <Route path="/reservation" element={<ReservationPage />} />
-            </Routes>
-        </Router>
+        <AuthProvider>
+            <Router>
+                <Routes>
+                    <Route path="/" element={<Home />} />
+                    <Route path="/home" element={<HomePage />} />
+                    <Route path="/reservation" element={<ReservationPage />} />
+                </Routes>
+            </Router>
+        </AuthProvider>
     );
 }
 

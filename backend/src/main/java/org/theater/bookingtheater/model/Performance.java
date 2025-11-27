@@ -21,6 +21,7 @@ public class Performance {
     private Long id;
 
     private String title;
+    private String theater;
     private LocalDateTime dateTime;
     private double basePrice;
     private int totalSeats;
