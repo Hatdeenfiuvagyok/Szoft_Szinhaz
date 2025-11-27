@@ -1,16 +1,18 @@
-import React, {useState} from 'react';
-import {useNavigate} from 'react-router-dom';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import theaterImg from './assets/theater.jpg';
-import { useIsLoggedIn } from './useIsLoggedIn';
+import { useAuth } from './AuthContext';
 
-export default function Layout({children}) {
+export default function Layout({ children }) {
+    // 🔧 ITT A JAVÍTÁS: mindkettőt kivesszük a contextből
+    const { isLoggedIn, setIsLoggedIn } = useAuth();
+
     const [modalOpen, setModalOpen] = useState(false);
     const [isRegister, setIsRegister] = useState(false);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [message, setMessage] = useState('');
-    const [isLoggedIn, setIsLoggedIn] = useIsLoggedIn();
 
     const navigate = useNavigate();
 
@@ -22,8 +24,8 @@ export default function Layout({children}) {
         try {
             const response = await fetch('http://localhost:8080/api/login', {
                 method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({email, password}),
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password }),
             });
             const data = await response.json();
             if (data.success) {
@@ -60,8 +62,8 @@ export default function Layout({children}) {
         try {
             const response = await fetch('http://localhost:8080/api/register', {
                 method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({email, password}),
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password }),
             });
             const data = await response.json();
             if (data.success) {
@@ -98,15 +100,15 @@ export default function Layout({children}) {
     };
 
     const menuItems = [
-        {name: 'Csokonai Színház', path: '/home'},
-        {name: 'Vojtina Színház', path: '/home'},
-        {name: 'Vidám Színház', path: '/home'},
-        {name: 'Foglalás', path: '/reservation'},
-        {name: 'Kapcsolat', path: '/home'},
+        { name: 'Csokonai Színház', path: '/home' },
+        { name: 'Vojtina Színház', path: '/home' },
+        { name: 'Vidám Színház', path: '/home' },
+        { name: 'Foglalás', path: '/reservation' },
+        { name: 'Kapcsolat', path: '/home' },
     ];
 
     return (
-        <div style={{position: 'relative', height: '100vh', width: '100%', overflow: 'hidden'}}>
+        <div style={{ position: 'relative', height: '100vh', width: '100%', overflow: 'hidden' }}>
             {/* Háttér */}
             <div
                 style={{
@@ -124,14 +126,16 @@ export default function Layout({children}) {
             />
 
             {/* Tartalom */}
-            <div style={{
-                position: 'relative',
-                zIndex: 1,
-                height: '100%',
-                display: 'flex',
-                flexDirection: 'column',
-                color: 'white'
-            }}>
+            <div
+                style={{
+                    position: 'relative',
+                    zIndex: 1,
+                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    color: 'white',
+                }}
+            >
                 {/* Navigációs sáv */}
                 <nav
                     style={{
@@ -146,7 +150,12 @@ export default function Layout({children}) {
                     {/* Bal oldali Színházak */}
                     <div
                         onClick={() => navigate('/home')}
-                        style={{cursor: 'pointer', fontWeight: 'bold', fontSize: '18px', color: 'white'}}
+                        style={{
+                            cursor: 'pointer',
+                            fontWeight: 'bold',
+                            fontSize: '18px',
+                            color: 'white',
+                        }}
                         onMouseEnter={(e) => (e.currentTarget.style.color = '#ccc')}
                         onMouseLeave={(e) => (e.currentTarget.style.color = 'white')}
                     >
@@ -154,23 +163,30 @@ export default function Layout({children}) {
                     </div>
 
                     {/* Középső menü */}
-                    <div style={{display: 'flex', alignItems: 'center', gap: '15px'}}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
                         {menuItems.map((item, index) => (
                             <React.Fragment key={item.name}>
                                 <div
                                     onClick={() => navigate(item.path)}
-                                    style={{cursor: 'pointer', color: 'white', padding: '0 10px', fontWeight: '500'}}
+                                    style={{
+                                        cursor: 'pointer',
+                                        color: 'white',
+                                        padding: '0 10px',
+                                        fontWeight: '500',
+                                    }}
                                     onMouseEnter={(e) => (e.currentTarget.style.color = '#ccc')}
                                     onMouseLeave={(e) => (e.currentTarget.style.color = 'white')}
                                 >
                                     {item.name}
                                 </div>
                                 {index < menuItems.length - 1 && (
-                                    <div style={{
-                                        width: '1px',
-                                        height: '20px',
-                                        backgroundColor: 'rgba(255,255,255,0.3)'
-                                    }}/>
+                                    <div
+                                        style={{
+                                            width: '1px',
+                                            height: '20px',
+                                            backgroundColor: 'rgba(255,255,255,0.3)',
+                                        }}
+                                    />
                                 )}
                             </React.Fragment>
                         ))}
@@ -187,7 +203,7 @@ export default function Layout({children}) {
                                     border: 'none',
                                     backgroundColor: '#555555',
                                     color: 'white',
-                                    cursor: 'pointer'
+                                    cursor: 'pointer',
                                 }}
                             >
                                 Kijelentkezés
@@ -202,7 +218,7 @@ export default function Layout({children}) {
                                     backgroundColor: '#555555',
                                     color: 'white',
                                     cursor: 'pointer',
-                                    fontSize: '15px'
+                                    fontSize: '15px',
                                 }}
                             >
                                 Bejelentkezés
@@ -230,9 +246,7 @@ export default function Layout({children}) {
                 )}
 
                 {/* Oldal tartalom */}
-                <div style={{flex: 1}}>
-                    {children}
-                </div>
+                <div style={{ flex: 1 }}>{children}</div>
 
                 {/* Modal */}
                 {modalOpen && (
@@ -270,73 +284,108 @@ export default function Layout({children}) {
                                     border: 'none',
                                     color: 'white',
                                     fontSize: '18px',
-                                    cursor: 'pointer'
+                                    cursor: 'pointer',
                                 }}
                             >
                                 ×
                             </button>
 
-                            <h2 style={{
-                                textAlign: 'center',
-                                marginBottom: '20px'
-                            }}>{isRegister ? 'Regisztráció' : 'Bejelentkezés'}</h2>
+                            <h2
+                                style={{
+                                    textAlign: 'center',
+                                    marginBottom: '20px',
+                                }}
+                            >
+                                {isRegister ? 'Regisztráció' : 'Bejelentkezés'}
+                            </h2>
 
                             <form onSubmit={handleSubmit}>
-                                <input type="email" placeholder="Email" value={email}
-                                       onChange={(e) => setEmail(e.target.value)} style={{
-                                    width: '100%',
-                                    padding: '10px',
-                                    marginBottom: '10px',
-                                    borderRadius: '5px',
-                                    border: 'none'
-                                }}/>
-                                <input type="password" placeholder="Jelszó" value={password}
-                                       onChange={(e) => setPassword(e.target.value)} style={{
-                                    width: '100%',
-                                    padding: '10px',
-                                    marginBottom: isRegister ? '10px' : '15px',
-                                    borderRadius: '5px',
-                                    border: 'none'
-                                }}/>
-                                {isRegister && <input type="password" placeholder="Jelszó újra" value={confirmPassword}
-                                                      onChange={(e) => setConfirmPassword(e.target.value)} style={{
-                                    width: '100%',
-                                    padding: '10px',
-                                    marginBottom: '15px',
-                                    borderRadius: '5px',
-                                    border: 'none'
-                                }}/>}
-                                {message && <p style={{
-                                    color: 'lightcoral',
-                                    textAlign: 'center',
-                                    marginBottom: '10px'
-                                }}>{message}</p>}
-                                <button type="submit" style={{
-                                    width: '100%',
-                                    padding: '10px',
-                                    borderRadius: '6px',
-                                    border: 'none',
-                                    backgroundColor: '#555555',
-                                    color: 'white',
-                                    cursor: 'pointer',
-                                    fontSize: '16px'
-                                }}>
+                                <input
+                                    type="email"
+                                    placeholder="Email"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    style={{
+                                        width: '100%',
+                                        padding: '10px',
+                                        marginBottom: '10px',
+                                        borderRadius: '5px',
+                                        border: 'none',
+                                    }}
+                                />
+                                <input
+                                    type="password"
+                                    placeholder="Jelszó"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    style={{
+                                        width: '100%',
+                                        padding: '10px',
+                                        marginBottom: isRegister ? '10px' : '15px',
+                                        borderRadius: '5px',
+                                        border: 'none',
+                                    }}
+                                />
+                                {isRegister && (
+                                    <input
+                                        type="password"
+                                        placeholder="Jelszó újra"
+                                        value={confirmPassword}
+                                        onChange={(e) => setConfirmPassword(e.target.value)}
+                                        style={{
+                                            width: '100%',
+                                            padding: '10px',
+                                            marginBottom: '15px',
+                                            borderRadius: '5px',
+                                            border: 'none',
+                                        }}
+                                    />
+                                )}
+                                {message && (
+                                    <p
+                                        style={{
+                                            color: 'lightcoral',
+                                            textAlign: 'center',
+                                            marginBottom: '10px',
+                                        }}
+                                    >
+                                        {message}
+                                    </p>
+                                )}
+                                <button
+                                    type="submit"
+                                    style={{
+                                        width: '100%',
+                                        padding: '10px',
+                                        borderRadius: '6px',
+                                        border: 'none',
+                                        backgroundColor: '#555555',
+                                        color: 'white',
+                                        cursor: 'pointer',
+                                        fontSize: '16px',
+                                    }}
+                                >
                                     {isRegister ? 'Regisztráció' : 'Bejelentkezés'}
                                 </button>
                             </form>
 
-                            <p onClick={() => {
-                                setIsRegister(!isRegister);
-                                setMessage('');
-                                setConfirmPassword('');
-                            }} style={{
-                                marginTop: '15px',
-                                textAlign: 'center',
-                                cursor: 'pointer',
-                                color: '#aaa',
-                                fontSize: '14px'
-                            }}>
-                                {isRegister ? 'Van már fiókod? Bejelentkezés' : 'Nincs fiókod? Regisztráció'}
+                            <p
+                                onClick={() => {
+                                    setIsRegister(!isRegister);
+                                    setMessage('');
+                                    setConfirmPassword('');
+                                }}
+                                style={{
+                                    marginTop: '15px',
+                                    textAlign: 'center',
+                                    cursor: 'pointer',
+                                    color: '#aaa',
+                                    fontSize: '14px',
+                                }}
+                            >
+                                {isRegister
+                                    ? 'Van már fiókod? Bejelentkezés'
+                                    : 'Nincs fiókod? Regisztráció'}
                             </p>
                         </div>
                     </div>
