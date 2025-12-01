@@ -4,8 +4,7 @@ import theaterImg from './assets/theater.jpg';
 import { useAuth } from './AuthContext';
 
 export default function Layout({ children }) {
-    // 🔧 ITT A JAVÍTÁS: mindkettőt kivesszük a contextből
-    const { isLoggedIn, setIsLoggedIn } = useAuth();
+    const { isLoggedIn, setIsLoggedIn, user, setUser } = useAuth();
 
     const [modalOpen, setModalOpen] = useState(false);
     const [isRegister, setIsRegister] = useState(false);
@@ -32,6 +31,8 @@ export default function Layout({ children }) {
                 setMessage(data.message);
                 setIsLoggedIn(true);
                 localStorage.setItem('isLoggedIn', 'true');
+                setUser({email})
+                localStorage.setItem("userEmail", email)
                 setTimeout(() => {
                     setModalOpen(false);
                     setMessage('');
@@ -95,6 +96,8 @@ export default function Layout({ children }) {
     const handleLogout = () => {
         setIsLoggedIn(false);
         localStorage.removeItem('isLoggedIn');
+        localStorage.removeItem('userEmail');
+        setUser(null);
         setMessage('Sikeres kijelentkezés!');
         setTimeout(() => setMessage(''), 3000);
     };
@@ -195,19 +198,29 @@ export default function Layout({ children }) {
                     {/* Jobb oldali bejelentkezés / kijelentkezés */}
                     <div>
                         {isLoggedIn ? (
-                            <button
-                                onClick={handleLogout}
-                                style={{
-                                    padding: '5px 15px',
-                                    borderRadius: '6px',
-                                    border: 'none',
-                                    backgroundColor: '#555555',
-                                    color: 'white',
-                                    cursor: 'pointer',
-                                }}
-                            >
-                                Kijelentkezés
-                            </button>
+                            <div style={{ display: "flex", alignItems: "center", gap: "15px" }}>
+
+                                {/* Email kiírása */}
+                                <span style={{ fontSize: "14px", color: "#ddd" }}>
+                                    {user?.email}
+                                </span>
+
+                                {/* Kijelentkezés gomb */}
+                                <button
+                                    onClick={handleLogout}
+                                    style={{
+                                        padding: '5px 15px',
+                                        borderRadius: '6px',
+                                        border: 'none',
+                                        backgroundColor: '#555555',
+                                        color: 'white',
+                                        cursor: 'pointer',
+                                    }}
+                                >
+                                    Kijelentkezés
+                                </button>
+
+                            </div>
                         ) : (
                             <button
                                 onClick={() => setModalOpen(true)}

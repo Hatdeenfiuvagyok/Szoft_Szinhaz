@@ -4,7 +4,7 @@ import { useAuth } from './AuthContext';
 import './scrollableDiv.css';
 
 export default function ReservationPage() {
-    const { isLoggedIn } = useAuth();
+    const { isLoggedIn, user } = useAuth();
 
     const [performances, setPerformances] = useState([]);
     const [message, setMessage] = useState('');
@@ -14,6 +14,12 @@ export default function ReservationPage() {
     const [seatMap, setSeatMap] = useState(null);
     const [selectedSeats, setSelectedSeats] = useState([]);
 
+    // 🔥 Itt tartjuk nyilván: mely előadásokat foglalt a felhasználó
+    const [userBookedPerformanceIds, setUserBookedPerformanceIds] = useState(new Set());
+
+    // ========================
+    //     LOAD PERFORMANCES
+    // ========================
     useEffect(() => {
         const fetchPerformances = async () => {
             try {
@@ -35,11 +41,78 @@ export default function ReservationPage() {
         fetchPerformances();
     }, []);
 
-    const openReservationModal = (performance) => {
+    // ==============================
+    //   USER FOGLALÁSOK BETÖLTÉSE
+    // ==============================
+    const loadUserReservations = async () => {
+        if (!user) return;
+
+        const response = await fetch(
+            `http://localhost:8080/api/reservations/user?customerName=${user.email}`
+        );
+
+        const data = await response.json();
+
+        // csak az előadás ID-ja kell
+        const ids = new Set(data.map(r => r.performance.id));
+        setUserBookedPerformanceIds(ids);
+    };
+
+    // töltsük be, amikor user belép
+    useEffect(() => {
+        if (isLoggedIn && user) {
+            loadUserReservations();
+        }
+    }, [isLoggedIn, user]);
+
+    // =====================================
+    //         CANCEL RESERVATION
+    // =====================================
+    const cancelReservation = async (performanceId) => {
+        await fetch(
+            `http://localhost:8080/api/reservations/cancel?performanceId=${performanceId}&customerName=${user.email}`,
+            { method: "DELETE" }
+        );
+
+        const newSet = new Set(userBookedPerformanceIds);
+        newSet.delete(performanceId);
+        setUserBookedPerformanceIds(newSet);
+
+        setMessage("Foglalás törölve!");
+        setTimeout(() => setMessage(""), 3000);
+    };
+
+    // =====================================
+    //         OPEN MODAL (Seats)
+    // =====================================
+    const openReservationModal = async (performance) => {
         setSelectedPerformance(performance);
         setSelectedSeats([]);
 
+        // Ülésrend létrehozása
         const layout = generateSeatLayout(performance.totalSeats || 0);
+
+        // Foglalt székek from backend
+        const response = await fetch(
+            `http://localhost:8080/api/reservations/booked-seats?performanceId=${performance.id}`
+        );
+        const bookedSeats = await response.json();
+
+        // Piros helyek
+        const updateStatus = (rows) =>
+            rows.map(row =>
+                row.map(seat => {
+                    if (bookedSeats.includes(seat.id)) {
+                        return { ...seat, status: "unavailable" };
+                    }
+                    return seat;
+                })
+            );
+
+        layout.center = updateStatus(layout.center);
+        layout.left = updateStatus(layout.left);
+        layout.right = updateStatus(layout.right);
+
         setSeatMap(layout);
     };
 
@@ -49,6 +122,9 @@ export default function ReservationPage() {
         setSelectedSeats([]);
     };
 
+    // =====================================
+    //         HANDLE SEAT CLICK
+    // =====================================
     const handleSeatClick = (seat) => {
         if (!seat || seat.status !== 'available') return;
 
@@ -59,23 +135,50 @@ export default function ReservationPage() {
         });
     };
 
-    const handleConfirmReservation = () => {
+    // =====================================
+    //         CONFIRM RESERVATION
+    // =====================================
+    const handleConfirmReservation = async () => {
         if (selectedSeats.length === 0) {
             setMessage('Válassz ki legalább egy helyet!');
             setTimeout(() => setMessage(''), 3000);
             return;
         }
 
-        const totalPrice = selectedPerformance.basePrice * selectedSeats.length;
+        try {
+            for (const seat of selectedSeats) {
+                const reservationData = {
+                    customerName: user.email,
+                    seatId: seat.id,
+                    performance: { id: selectedPerformance.id },
+                    bookingTime: new Date().toISOString()
+                };
 
-        setMessage(
-            `Foglalás kész: ${selectedPerformance.title} – ${selectedSeats.length} hely, összesen ${totalPrice.toLocaleString()} Ft`
-        );
+                await fetch("http://localhost:8080/api/reservations", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(reservationData),
+                });
+            }
 
-        setTimeout(() => setMessage(''), 5000);
-        closeReservationModal();
+            // sikeres foglalás → frissítsük a listát
+            const newSet = new Set(userBookedPerformanceIds);
+            newSet.add(selectedPerformance.id);
+            setUserBookedPerformanceIds(newSet);
+
+            setMessage("Foglalás sikeresen mentve!");
+            setTimeout(() => setMessage(''), 5000);
+            closeReservationModal();
+        } catch (error) {
+            console.error(error);
+            setMessage("Hiba történt a foglalás közben.");
+            setTimeout(() => setMessage(''), 5000);
+        }
     };
 
+    // ==============================
+    //             RENDER
+    // ==============================
     return (
         <Layout>
             <div
@@ -156,12 +259,24 @@ export default function ReservationPage() {
                                         </td>
                                         <td style={cellStyle}>
                                             {isLoggedIn ? (
-                                                <button
-                                                    onClick={() => openReservationModal(item)}
-                                                    style={reserveButtonStyle}
-                                                >
-                                                    Foglalás
-                                                </button>
+                                                userBookedPerformanceIds.has(item.id) ? (
+                                                    <button
+                                                        onClick={() => cancelReservation(item.id)}
+                                                        style={{
+                                                            ...reserveButtonStyle,
+                                                            backgroundColor: '#b71c1c',
+                                                        }}
+                                                    >
+                                                        Foglalás törlése
+                                                    </button>
+                                                ) : (
+                                                    <button
+                                                        onClick={() => openReservationModal(item)}
+                                                        style={reserveButtonStyle}
+                                                    >
+                                                        Foglalás
+                                                    </button>
+                                                )
                                             ) : (
                                                 <span style={{ color: 'lightcoral' }}>
                                                     Jelentkezz be
@@ -176,153 +291,174 @@ export default function ReservationPage() {
                 )}
             </div>
 
+            {/* Modal */}
             {selectedPerformance && seatMap && (
-                <div style={modalOverlayStyle}>
-                    <div style={modalContainerStyle}>
-
-                        {/* Bal oszlop */}
-                        <div style={leftColumnStyle}>
-                            <h2>{selectedPerformance.title}</h2>
-                            <p><strong>Színház:</strong> {selectedPerformance.theater}</p>
-                            <p>
-                                <strong>Időpont:</strong>{' '}
-                                {new Date(selectedPerformance.dateTime).toLocaleString('hu-HU')}
-                            </p>
-                            <p><strong>Összes férőhely:</strong> {selectedPerformance.totalSeats}</p>
-
-                            <hr style={{ borderColor: '#555' }} />
-
-                            <p><strong>Helyek:</strong> {selectedSeats.length}</p>
-                            <p><strong>Jegy ár:</strong> {selectedPerformance.basePrice} Ft</p>
-                            <p>
-                                <strong>Összesen:</strong>{' '}
-                                {(selectedPerformance.basePrice * selectedSeats.length).toLocaleString()} Ft
-                            </p>
-
-                            <button
-                                onClick={handleConfirmReservation}
-                                style={{
-                                    marginTop: '20px',
-                                    width: '100%',
-                                    padding: '10px',
-                                    backgroundColor: '#4caf50',
-                                    color: 'white',
-                                    borderRadius: '6px',
-                                    border: 'none',
-                                    cursor: 'pointer',
-                                }}
-                            >
-                                Foglalás véglegesítése
-                            </button>
-
-                            <button
-                                onClick={closeReservationModal}
-                                style={{
-                                    marginTop: '10px',
-                                    width: '100%',
-                                    padding: '8px',
-                                    backgroundColor: '#777',
-                                    color: 'white',
-                                    borderRadius: '6px',
-                                    border: 'none',
-                                }}
-                            >
-                                Mégse
-                            </button>
-                        </div>
-
-                        {/* Jobb oszlop */}
-                        <div style={rightColumnStyle}>
-
-                            {/* SZÍNPAD FELÜL */}
-                            <div
-                                style={{
-                                    marginBottom: '8px',
-                                    textAlign: 'center',
-                                    fontSize: '12px',
-                                    padding: '4px 0',
-                                    borderBottom: '1px solid #666',
-                                }}
-                            >
-                                SZÍNPAD
-                            </div>
-
-                            {/* Ülésrend 3 blokkban */}
-                            <div style={seatLayoutWrapperStyle}>
-
-                                {/* BAL GALÉRIA */}
-                                <div style={leftGalleryStyle}>
-                                    {seatMap.left.map((row, idx) => (
-                                        <SeatRow
-                                            key={`L-${idx}`}
-                                            row={row}
-                                            alignment="right"
-                                            offset={idx}
-                                            onSeatClick={handleSeatClick}
-                                            selectedSeats={selectedSeats}
-                                        />
-                                    ))}
-                                </div>
-
-                                {/* KÖZÉPSŐ RÉSZ */}
-                                <div style={centerBlockStyle}>
-                                    {seatMap.center.map((row, idx) => (
-                                        <SeatRow
-                                            key={`C-${idx}`}
-                                            row={row}
-                                            alignment="center"
-                                            offset={idx}
-                                            onSeatClick={handleSeatClick}
-                                            selectedSeats={selectedSeats}
-                                        />
-                                    ))}
-                                </div>
-
-                                {/* JOBB GALÉRIA */}
-                                <div style={rightGalleryStyle}>
-                                    {seatMap.right.map((row, idx) => (
-                                        <SeatRow
-                                            key={`R-${idx}`}
-                                            row={row}
-                                            alignment="left"
-                                            offset={idx}
-                                            onSeatClick={handleSeatClick}
-                                            selectedSeats={selectedSeats}
-                                        />
-                                    ))}
-                                </div>
-                            </div>
-
-                            {/* LÁBLÉC – LEGALUL */}
-                            <div style={{ marginTop: '20px', textAlign: 'center' }}>
-                                <strong>Válaszd ki a helyed!</strong>
-
-                                <div
-                                    style={{
-                                        display: 'flex',
-                                        justifyContent: 'center',
-                                        gap: '15px',
-                                        marginTop: '10px',
-                                        fontSize: '12px',
-                                    }}
-                                >
-                                    <Legend color="#4caf50" label="Szabad" />
-                                    <Legend color="#b71c1c" label="Nem elérhető" />
-                                    <Legend color="#2196f3" label="Kiválasztott" />
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <RenderModal
+                    selectedPerformance={selectedPerformance}
+                    seatMap={seatMap}
+                    selectedSeats={selectedSeats}
+                    handleSeatClick={handleSeatClick}
+                    handleConfirmReservation={handleConfirmReservation}
+                    closeReservationModal={closeReservationModal}
+                />
             )}
         </Layout>
     );
 }
 
-/* ====== ÜLÉSREND GENERÁTOR ====== */
+/* ==========================================================
+   A MODAL KÜLÖN KOMPONENS (ÁTLÁTHATÓBB)
+========================================================== */
+
+function RenderModal({
+    selectedPerformance,
+    seatMap,
+    selectedSeats,
+    handleSeatClick,
+    handleConfirmReservation,
+    closeReservationModal
+}) {
+    return (
+        <div style={modalOverlayStyle}>
+            <div style={modalContainerStyle}>
+
+                {/* Bal oldal */}
+                <div style={leftColumnStyle}>
+                    <h2>{selectedPerformance.title}</h2>
+                    <p><strong>Színház:</strong> {selectedPerformance.theater}</p>
+                    <p>
+                        <strong>Időpont:</strong>{' '}
+                        {new Date(selectedPerformance.dateTime).toLocaleString('hu-HU')}
+                    </p>
+                    <p><strong>Összes férőhely:</strong> {selectedPerformance.totalSeats}</p>
+
+                    <hr style={{ borderColor: '#555' }} />
+
+                    <p><strong>Helyek:</strong> {selectedSeats.length}</p>
+                    <p><strong>Jegy ár:</strong> {selectedPerformance.basePrice} Ft</p>
+                    <p>
+                        <strong>Összesen:</strong>{' '}
+                        {(selectedPerformance.basePrice * selectedSeats.length).toLocaleString()} Ft
+                    </p>
+
+                    <button
+                        onClick={handleConfirmReservation}
+                        style={{
+                            marginTop: '20px',
+                            width: '100%',
+                            padding: '10px',
+                            backgroundColor: '#4caf50',
+                            color: 'white',
+                            borderRadius: '6px',
+                            border: 'none',
+                            cursor: 'pointer',
+                        }}
+                    >
+                        Foglalás véglegesítése
+                    </button>
+
+                    <button
+                        onClick={closeReservationModal}
+                        style={{
+                            marginTop: '10px',
+                            width: '100%',
+                            padding: '8px',
+                            backgroundColor: '#777',
+                            color: 'white',
+                            borderRadius: '6px',
+                            border: 'none',
+                        }}
+                    >
+                        Mégse
+                    </button>
+                </div>
+
+                {/* Jobb oldal */}
+                <div style={rightColumnStyle}>
+                    <div
+                        style={{
+                            marginBottom: '8px',
+                            textAlign: 'center',
+                            fontSize: '12px',
+                            padding: '4px 0',
+                            borderBottom: '1px solid #666',
+                        }}
+                    >
+                        SZÍNPAD
+                    </div>
+
+                    <div style={seatLayoutWrapperStyle}>
+
+                        {/* Bal galéria */}
+                        <div style={leftGalleryStyle}>
+                            {seatMap.left.map((row, idx) => (
+                                <SeatRow
+                                    key={`L-${idx}`}
+                                    row={row}
+                                    alignment="right"
+                                    offset={idx}
+                                    onSeatClick={handleSeatClick}
+                                    selectedSeats={selectedSeats}
+                                />
+                            ))}
+                        </div>
+
+                        {/* Középső blokk */}
+                        <div style={centerBlockStyle}>
+                            {seatMap.center.map((row, idx) => (
+                                <SeatRow
+                                    key={`C-${idx}`}
+                                    row={row}
+                                    alignment="center"
+                                    offset={idx}
+                                    onSeatClick={handleSeatClick}
+                                    selectedSeats={selectedSeats}
+                                />
+                            ))}
+                        </div>
+
+                        {/* Jobb galéria */}
+                        <div style={rightGalleryStyle}>
+                            {seatMap.right.map((row, idx) => (
+                                <SeatRow
+                                    key={`R-${idx}`}
+                                    row={row}
+                                    alignment="left"
+                                    offset={idx}
+                                    onSeatClick={handleSeatClick}
+                                    selectedSeats={selectedSeats}
+                                />
+                            ))}
+                        </div>
+                    </div>
+
+                    <div style={{ marginTop: '20px', textAlign: 'center' }}>
+                        <strong>Válaszd ki a helyed!</strong>
+                        <div
+                            style={{
+                                display: 'flex',
+                                justifyContent: 'center',
+                                gap: '15px',
+                                marginTop: '10px',
+                                fontSize: '12px',
+                            }}
+                        >
+                            <Legend color="#4caf50" label="Szabad" />
+                            <Legend color="#b71c1c" label="Nem elérhető" />
+                            <Legend color="#2196f3" label="Kiválasztott" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+/* ==========================================================
+   ÜLÉSREND GENERÁTOR + SEATROW + LEGEND + STYLES
+========================================================== */
 
 function generateSeatLayout(totalSeats) {
-
     const centerRowSizes = [8, 8, 10, 10, 12, 12, 14, 14, 16, 16];
 
     const center = centerRowSizes.map((seatCount, rowIndex) =>
@@ -356,15 +492,11 @@ function generateSeatLayout(totalSeats) {
     return { center, left, right };
 }
 
-/* ===== KOMPOZIT ÉKELEMEK ===== */
-
 function SeatRow({ row, alignment, offset, onSeatClick, selectedSeats }) {
-    const isCenter = alignment === 'center';
-
     let rowStyle = {
         display: 'flex',
-        justifyContent: 'center',     // minden sor középen legyen
-        flexDirection: 'row',         // vízszintesen legyenek
+        justifyContent: 'center',
+        flexDirection: 'row',
         marginBottom: 4,
     };
 
@@ -427,7 +559,7 @@ function Legend({ color, label }) {
     );
 }
 
-/* ===== STÍLUSOK ===== */
+/* STYLES */
 
 const headerStyle = {
     padding: '12px 8px',

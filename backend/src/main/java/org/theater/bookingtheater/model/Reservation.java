@@ -17,7 +17,9 @@ public class Reservation {
     private Long id;
 
     private String customerName;
-    private int seatNumber;
+
+    // 🔥 ÚJ – egyedi szék azonosító, pl: "C-3-5"
+    private String seatId;
 
     @ManyToOne
     @JoinColumn(name = "performance_id")
