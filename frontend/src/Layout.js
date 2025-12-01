@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import theaterImg from './assets/theater.jpg';
 import { useAuth } from './AuthContext';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import './toast.css';
 
 export default function Layout({ children }) {
     const { isLoggedIn, setIsLoggedIn, user, setUser } = useAuth();
@@ -111,7 +114,8 @@ export default function Layout({ children }) {
     ];
 
     return (
-        <div style={{ position: 'relative', height: '100vh', width: '100%', overflow: 'hidden' }}>
+        <>
+        <div style={{ position: 'relative', minHeight: '100vh', width: '100%' }}>
             {/* Háttér */}
             <div
                 style={{
@@ -405,5 +409,13 @@ export default function Layout({ children }) {
                 )}
             </div>
         </div>
-    );
+                <ToastContainer
+                    position="top-right"
+                    autoClose={2000}
+                    toastClassName="toast-dark"
+                    hideProgressBar={false}
+                    theme="dark"
+                />
+            </>
+        );
 }

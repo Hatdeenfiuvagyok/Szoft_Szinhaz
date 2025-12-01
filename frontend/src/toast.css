@@ -1,0 +1,11 @@
+.toast-dark {
+    background: #1f1f1f !important;
+    color: #fff !important;
+    border-radius: 10px !important;
+    padding: 14px 18px !important;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.6) !important;
+}
+
+.toast-dark .Toastify__progress-bar {
+    background: #bb86fc !important;
+}

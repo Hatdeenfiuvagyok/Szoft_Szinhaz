@@ -2,12 +2,12 @@ import React, { useState, useEffect } from 'react';
 import Layout from './Layout';
 import { useAuth } from './AuthContext';
 import './scrollableDiv.css';
+import { toast } from "react-toastify";
 
 export default function ReservationPage() {
     const { isLoggedIn, user } = useAuth();
 
     const [performances, setPerformances] = useState([]);
-    const [message, setMessage] = useState('');
     const [loading, setLoading] = useState(true);
 
     const [selectedPerformance, setSelectedPerformance] = useState(null);
@@ -33,7 +33,6 @@ export default function ReservationPage() {
                 setPerformances(sortedData);
             } catch (error) {
                 console.error('Nem sikerült betölteni az előadásokat:', error);
-                setMessage('Nem sikerült betölteni az előadásokat.');
             } finally {
                 setLoading(false);
             }
@@ -41,28 +40,21 @@ export default function ReservationPage() {
         fetchPerformances();
     }, []);
 
-    // ==============================
-    //   USER FOGLALÁSOK BETÖLTÉSE
-    // ==============================
-    const loadUserReservations = async () => {
-        if (!user) return;
-
-        const response = await fetch(
-            `http://localhost:8080/api/reservations/user?customerName=${user.email}`
-        );
-
-        const data = await response.json();
-
-        // csak az előadás ID-ja kell
-        const ids = new Set(data.map(r => r.performance.id));
-        setUserBookedPerformanceIds(ids);
-    };
-
     // töltsük be, amikor user belép
     useEffect(() => {
-        if (isLoggedIn && user) {
-            loadUserReservations();
-        }
+        if (!isLoggedIn || !user) return;
+
+        const load = async () => {
+            const response = await fetch(
+                `http://localhost:8080/api/reservations/user?customerName=${user.email}`
+            );
+
+            const data = await response.json();
+            const ids = new Set(data.map(r => r.performance.id));
+            setUserBookedPerformanceIds(ids);
+        };
+
+        load();
     }, [isLoggedIn, user]);
 
     // =====================================
@@ -78,8 +70,7 @@ export default function ReservationPage() {
         newSet.delete(performanceId);
         setUserBookedPerformanceIds(newSet);
 
-        setMessage("Foglalás törölve!");
-        setTimeout(() => setMessage(""), 3000);
+        toast.error("Foglalás törölve!");
     };
 
     // =====================================
@@ -122,6 +113,7 @@ export default function ReservationPage() {
         setSelectedSeats([]);
     };
 
+
     // =====================================
     //         HANDLE SEAT CLICK
     // =====================================
@@ -140,8 +132,7 @@ export default function ReservationPage() {
     // =====================================
     const handleConfirmReservation = async () => {
         if (selectedSeats.length === 0) {
-            setMessage('Válassz ki legalább egy helyet!');
-            setTimeout(() => setMessage(''), 3000);
+            toast.error("Válassz ki legalább egy helyet!");
             return;
         }
 
@@ -166,13 +157,11 @@ export default function ReservationPage() {
             newSet.add(selectedPerformance.id);
             setUserBookedPerformanceIds(newSet);
 
-            setMessage("Foglalás sikeresen mentve!");
-            setTimeout(() => setMessage(''), 5000);
+            toast.success("Foglalás sikeres!");
             closeReservationModal();
         } catch (error) {
             console.error(error);
-            setMessage("Hiba történt a foglalás közben.");
-            setTimeout(() => setMessage(''), 5000);
+            toast.error("Hiba történt a foglalás közben.");
         }
     };
 
@@ -196,21 +185,6 @@ export default function ReservationPage() {
                     🎭 Elérhető előadások
                 </h1>
 
-                {message && (
-                    <div
-                        style={{
-                            backgroundColor: 'rgba(0,0,0,0.7)',
-                            padding: '10px 20px',
-                            borderRadius: '6px',
-                            color: 'lightgreen',
-                            textAlign: 'center',
-                            marginBottom: '20px',
-                            width: '100%',
-                        }}
-                    >
-                        {message}
-                    </div>
-                )}
 
                 {loading ? (
                     <p style={{ textAlign: 'center', width: '100%' }}>Betöltés...</p>
