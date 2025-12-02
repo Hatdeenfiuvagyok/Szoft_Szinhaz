@@ -4,6 +4,7 @@ import './App.css';
 import theaterImg from './assets/theater.jpg';
 import HomePage from './HomePage';
 import ReservationPage from './ReservationPage';
+import AdminPage from './AdminPage';
 import { AuthProvider } from './AuthContext';
 
 function Home() {
@@ -70,6 +71,7 @@ function App() {
                     <Route path="/" element={<Home />} />
                     <Route path="/home" element={<HomePage />} />
                     <Route path="/reservation" element={<ReservationPage />} />
+                    <Route path="/admin-4682-panel" element={<AdminPage />} />
                 </Routes>
             </Router>
         </AuthProvider>

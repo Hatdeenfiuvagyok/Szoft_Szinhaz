@@ -1,14 +1,13 @@
 package org.theater.bookingtheater.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Data
@@ -25,4 +24,8 @@ public class Performance {
     private LocalDateTime dateTime;
     private double basePrice;
     private int totalSeats;
+    // 🔥 EZ A RÉSZ HIÁNYZOTT
+    @OneToMany(mappedBy = "performance", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @JsonIgnore
+    private List<Reservation> reservations;
 }

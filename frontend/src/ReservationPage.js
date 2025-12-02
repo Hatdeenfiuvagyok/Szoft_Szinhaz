@@ -14,8 +14,25 @@ export default function ReservationPage() {
     const [seatMap, setSeatMap] = useState(null);
     const [selectedSeats, setSelectedSeats] = useState([]);
 
-    // 🔥 Itt tartjuk nyilván: mely előadásokat foglalt a felhasználó
+    const [dynamicPrice, setDynamicPrice] = useState(null); // ⭐ új
+
     const [userBookedPerformanceIds, setUserBookedPerformanceIds] = useState(new Set());
+
+    // ⭐⭐⭐ Dinamikus ár függvény
+    function calculateDynamicPrice(performance, index) {
+        let price = performance.basePrice;
+
+        // 2) Előadás előtt 2 nap → +5%
+        const now = new Date();
+        const perfDate = new Date(performance.dateTime);
+        const differenceInDays = (perfDate - now) / (1000 * 60 * 60 * 24);
+
+        if (differenceInDays <= 2) {
+            price *= 1.05;
+        }
+
+        return Math.round(price / 100)*100;
+    }
 
     // ========================
     //     LOAD PERFORMANCES
@@ -30,7 +47,13 @@ export default function ReservationPage() {
                 const sortedData = data.sort(
                     (a, b) => new Date(a.dateTime) - new Date(b.dateTime)
                 );
-                setPerformances(sortedData);
+                const now = new Date();
+
+                const upcomingPerformances = sortedData.filter(p =>
+                    new Date(p.dateTime) > now
+                );
+                setPerformances(upcomingPerformances);
+
             } catch (error) {
                 console.error('Nem sikerült betölteni az előadásokat:', error);
             } finally {
@@ -76,20 +99,21 @@ export default function ReservationPage() {
     // =====================================
     //         OPEN MODAL (Seats)
     // =====================================
-    const openReservationModal = async (performance) => {
+    const openReservationModal = async (performance, index) => {
         setSelectedPerformance(performance);
         setSelectedSeats([]);
 
-        // Ülésrend létrehozása
+        // ⭐ dinamikus ár kiszámítása itt
+        const dynPrice = calculateDynamicPrice(performance, index);
+        setDynamicPrice(dynPrice);
+
         const layout = generateSeatLayout(performance.totalSeats || 0);
 
-        // Foglalt székek from backend
         const response = await fetch(
             `http://localhost:8080/api/reservations/booked-seats?performanceId=${performance.id}`
         );
         const bookedSeats = await response.json();
 
-        // Piros helyek
         const updateStatus = (rows) =>
             rows.map(row =>
                 row.map(seat => {
@@ -111,8 +135,8 @@ export default function ReservationPage() {
         setSelectedPerformance(null);
         setSeatMap(null);
         setSelectedSeats([]);
+        setDynamicPrice(null); // ⭐ reset
     };
-
 
     // =====================================
     //         HANDLE SEAT CLICK
@@ -152,7 +176,6 @@ export default function ReservationPage() {
                 });
             }
 
-            // sikeres foglalás → frissítsük a listát
             const newSet = new Set(userBookedPerformanceIds);
             newSet.add(selectedPerformance.id);
             setUserBookedPerformanceIds(newSet);
@@ -185,7 +208,6 @@ export default function ReservationPage() {
                     🎭 Elérhető előadások
                 </h1>
 
-
                 {loading ? (
                     <p style={{ textAlign: 'center', width: '100%' }}>Betöltés...</p>
                 ) : (
@@ -210,12 +232,12 @@ export default function ReservationPage() {
                                     <th style={headerStyle}>Dátum</th>
                                     <th style={headerStyle}>Színház</th>
                                     <th style={headerStyle}>Színdarab</th>
-                                    <th style={headerStyle}>Ár (Ft)</th>
+                                    <th style={headerStyle}>Alap Ár (Ft)</th>
                                     <th style={headerStyle}>Foglalás</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {performances.map((item) => (
+                                {performances.map((item, index) => (
                                     <tr
                                         key={item.id}
                                         style={{
@@ -245,7 +267,7 @@ export default function ReservationPage() {
                                                     </button>
                                                 ) : (
                                                     <button
-                                                        onClick={() => openReservationModal(item)}
+                                                        onClick={() => openReservationModal(item, index)}
                                                         style={reserveButtonStyle}
                                                     >
                                                         Foglalás
@@ -274,6 +296,7 @@ export default function ReservationPage() {
                     handleSeatClick={handleSeatClick}
                     handleConfirmReservation={handleConfirmReservation}
                     closeReservationModal={closeReservationModal}
+                    dynamicPrice={dynamicPrice} // ⭐ átadjuk
                 />
             )}
         </Layout>
@@ -281,7 +304,7 @@ export default function ReservationPage() {
 }
 
 /* ==========================================================
-   A MODAL KÜLÖN KOMPONENS (ÁTLÁTHATÓBB)
+   A MODAL KOMPONENS
 ========================================================== */
 
 function RenderModal({
@@ -290,7 +313,8 @@ function RenderModal({
     selectedSeats,
     handleSeatClick,
     handleConfirmReservation,
-    closeReservationModal
+    closeReservationModal,
+    dynamicPrice
 }) {
     return (
         <div style={modalOverlayStyle}>
@@ -299,20 +323,33 @@ function RenderModal({
                 {/* Bal oldal */}
                 <div style={leftColumnStyle}>
                     <h2>{selectedPerformance.title}</h2>
-                    <p><strong>Színház:</strong> {selectedPerformance.theater}</p>
-                    <p>
+                    <p style={{ margin: '8px 0' }}><strong>Színház:</strong> {selectedPerformance.theater}</p>
+                    <p style={{ margin: '8px 0' }}>
                         <strong>Időpont:</strong>{' '}
                         {new Date(selectedPerformance.dateTime).toLocaleString('hu-HU')}
                     </p>
-                    <p><strong>Összes férőhely:</strong> {selectedPerformance.totalSeats}</p>
+                    <p style={{ margin: '8px 0' }}><strong>Összes férőhely:</strong> {selectedPerformance.totalSeats}</p>
 
-                    <hr style={{ borderColor: '#555' }} />
+                    <p style={{ margin: '8px 0' }}><strong>Helyek:</strong> {selectedSeats.length}</p>
 
-                    <p><strong>Helyek:</strong> {selectedSeats.length}</p>
-                    <p><strong>Jegy ár:</strong> {selectedPerformance.basePrice} Ft</p>
-                    <p>
+                    {/* ⭐ Dinamikus ár mutatása */}
+                    <p style={{ margin: '8px 0' }}><strong>Jegy ár:</strong> {selectedPerformance.basePrice} Ft</p>
+
+                    <p style={{ margin: '8px 0' }}>
                         <strong>Összesen:</strong>{' '}
-                        {(selectedPerformance.basePrice * selectedSeats.length).toLocaleString()} Ft
+                        {(dynamicPrice * selectedSeats.length).toLocaleString()} Ft
+                    </p>
+
+                    {/* ⭐ Tájékoztató szöveg – halvány, kisebb betűméret */}
+                    <p style={{
+                        fontSize: '12px',
+                        color: 'lightgray',
+                        marginTop: '10px',
+                        marginBottom: '10px',
+                        lineHeight: '1.4'
+                    }}>
+                        Az előadást megelőző két napban a jegyárak 5%-kal növekednek.<br />
+                        A foglalás érvényesítéséhez kérjük, érkezzenek meg az előadás előtt legalább fél órával.
                     </p>
 
                     <button
