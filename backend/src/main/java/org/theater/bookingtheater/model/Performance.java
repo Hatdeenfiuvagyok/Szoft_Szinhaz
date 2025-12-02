@@ -24,6 +24,7 @@ public class Performance {
     private LocalDateTime dateTime;
     private double basePrice;
     private int totalSeats;
+    private Integer bookedCount;
     // 🔥 EZ A RÉSZ HIÁNYZOTT
     @OneToMany(mappedBy = "performance", cascade = CascadeType.REMOVE, orphanRemoval = true)
     @JsonIgnore

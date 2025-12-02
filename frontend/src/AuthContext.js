@@ -5,18 +5,18 @@ const AuthContext = createContext();
 export function AuthProvider({ children }) {
 
     const [isLoggedIn, setIsLoggedIn] = useState(() => {
-        return localStorage.getItem("isLoggedIn") === "true";
+        return sessionStorage.getItem("isLoggedIn") === "true";
     });
 
     const [user, setUser] = useState(() => {
-        const saved = localStorage.getItem("userEmail");
+        const saved = sessionStorage.getItem("userEmail");
         return saved ? { email: saved } : null;
     });
 
     useEffect(() => {
         const handleStorageChange = () => {
-            setIsLoggedIn(localStorage.getItem("isLoggedIn") === "true");
-            const email = localStorage.getItem("userEmail");
+            setIsLoggedIn(sessionStorage.getItem("isLoggedIn") === "true");
+            const email = sessionStorage.getItem("userEmail");
             setUser(email ? { email } : null);
         };
 

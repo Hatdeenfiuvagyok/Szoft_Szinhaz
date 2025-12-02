@@ -33,9 +33,9 @@ export default function Layout({ children }) {
             if (data.success) {
                 setMessage(data.message);
                 setIsLoggedIn(true);
-                localStorage.setItem('isLoggedIn', 'true');
+                sessionStorage.setItem('isLoggedIn', 'true');
                 setUser({email})
-                localStorage.setItem("userEmail", email)
+                sessionStorage.setItem("userEmail", email)
                 setTimeout(() => {
                     setModalOpen(false);
                     setMessage('');
@@ -98,8 +98,8 @@ export default function Layout({ children }) {
 
     const handleLogout = () => {
         setIsLoggedIn(false);
-        localStorage.removeItem('isLoggedIn');
-        localStorage.removeItem('userEmail');
+        sessionStorage.removeItem('isLoggedIn');
+        sessionStorage.removeItem('userEmail');
         setUser(null);
         setMessage('Sikeres kijelentkezés!');
         setTimeout(() => setMessage(''), 3000);

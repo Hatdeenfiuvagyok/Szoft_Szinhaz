@@ -290,7 +290,7 @@ export default function AdminReservationTable() {
                                             disabled={!isNewPerformanceValid}
                                             onClick={handleAddPerformance}
                                         >
-                                            ➕ Hozzáadás
+                                            Hozzáadás
                                         </button>
                                     </td>
                                 </tr>
@@ -364,7 +364,16 @@ export default function AdminReservationTable() {
 
                                         {/* HELYEK (függ a nézettől) */}
                                         <td style={cellStyle}>
-                                            {item.totalSeats}
+                                            {showPast ? (
+                                                <>
+                                                    <div>Lefoglalható: {(item.totalSeats )}</div>
+                                                    <div>Lefoglalt: {(item.bookedCount)}</div>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <div>Lefoglalható: {item.totalSeats} fő</div>
+                                                </>
+                                            )}
                                         </td>
 
                                         {/* ÁR */}

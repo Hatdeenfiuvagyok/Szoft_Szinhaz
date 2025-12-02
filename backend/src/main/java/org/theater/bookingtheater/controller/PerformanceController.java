@@ -29,15 +29,13 @@ public class PerformanceController {
         for (Performance p : list) {
             // ha az előadás már elmúlt
             if (p.getDateTime().isBefore(now)) {
+                // Csak akkor számoljuk ki, ha még nem számoltuk ki korábban
+                if (p.getBookedCount() == null) {
+                    int bookedSeats = p.getReservations().size();
+                    p.setBookedCount(bookedSeats);
 
-                // számoljuk meg a foglalásokat
-                int bookedSeats = p.getReservations().size();
-
-                // totalSeats = foglalt helyek száma
-                p.setTotalSeats(bookedSeats);
-
-                // mentés
-                performanceRepository.save(p);
+                    performanceRepository.save(p);
+                }
             }
         }
 

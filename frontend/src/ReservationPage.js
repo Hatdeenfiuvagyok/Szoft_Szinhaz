@@ -251,7 +251,7 @@ export default function ReservationPage() {
                                         <td style={cellStyle}>{item.theater}</td>
                                         <td style={cellStyle}>{item.title}</td>
                                         <td style={cellStyle}>
-                                            {item.basePrice.toLocaleString()}
+                                            {Number(item.basePrice).toLocaleString()}
                                         </td>
                                         <td style={cellStyle}>
                                             {isLoggedIn ? (
@@ -319,6 +319,22 @@ function RenderModal({
     return (
         <div style={modalOverlayStyle}>
             <div style={modalContainerStyle}>
+                {/* Bezáró X gomb */}
+                <button
+                    onClick={closeReservationModal}
+                    style={{
+                        position: 'absolute',
+                        top: '10px',
+                        right: '15px',
+                        background: 'transparent',
+                        border: 'none',
+                        color: 'white',
+                        fontSize: '24px',
+                        cursor: 'pointer'
+                    }}
+                >
+                    ×
+                </button>
 
                 {/* Bal oldal */}
                 <div style={leftColumnStyle}>
@@ -608,6 +624,7 @@ const modalOverlayStyle = {
 };
 
 const modalContainerStyle = {
+    position: 'relative',
     display: 'flex',
     width: '100%',
     maxWidth: '1000px',

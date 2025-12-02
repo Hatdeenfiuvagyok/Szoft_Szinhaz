@@ -39,7 +39,7 @@ function Home() {
                     textShadow: '2px 2px 8px rgba(0,0,0,0.7)',
                 }}
             >
-                Magyar Színházak helyfoglalása
+                Debreceni Színházak helyfoglalása
             </h1>
 
             <button
