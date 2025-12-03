@@ -2,10 +2,12 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import theaterImg from './assets/theater.jpg';
 import { useAuth } from './AuthContext';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import './toast.css';
 
 export default function Layout({ children }) {
-    // 🔧 ITT A JAVÍTÁS: mindkettőt kivesszük a contextből
-    const { isLoggedIn, setIsLoggedIn } = useAuth();
+    const { isLoggedIn, setIsLoggedIn, user, setUser } = useAuth();
 
     const [modalOpen, setModalOpen] = useState(false);
     const [isRegister, setIsRegister] = useState(false);
@@ -31,7 +33,9 @@ export default function Layout({ children }) {
             if (data.success) {
                 setMessage(data.message);
                 setIsLoggedIn(true);
-                localStorage.setItem('isLoggedIn', 'true');
+                sessionStorage.setItem('isLoggedIn', 'true');
+                setUser({email})
+                sessionStorage.setItem("userEmail", email)
                 setTimeout(() => {
                     setModalOpen(false);
                     setMessage('');
@@ -94,21 +98,24 @@ export default function Layout({ children }) {
 
     const handleLogout = () => {
         setIsLoggedIn(false);
-        localStorage.removeItem('isLoggedIn');
+        sessionStorage.removeItem('isLoggedIn');
+        sessionStorage.removeItem('userEmail');
+        setUser(null);
         setMessage('Sikeres kijelentkezés!');
         setTimeout(() => setMessage(''), 3000);
     };
 
     const menuItems = [
-        { name: 'Csokonai Színház', path: '/home' },
+        { name: 'Csokonai Színház', path: '/Csokonai' },
         { name: 'Vojtina Színház', path: '/home' },
         { name: 'Vidám Színház', path: '/home' },
         { name: 'Foglalás', path: '/reservation' },
-        { name: 'Kapcsolat', path: '/home' },
+        { name: 'Kapcsolat', path: '/Kapcsolat' },
     ];
 
     return (
-        <div style={{ position: 'relative', height: '100vh', width: '100%', overflow: 'hidden' }}>
+        <>
+        <div style={{ position: 'relative', minHeight: '100vh', width: '100%' }}>
             {/* Háttér */}
             <div
                 style={{
@@ -195,19 +202,29 @@ export default function Layout({ children }) {
                     {/* Jobb oldali bejelentkezés / kijelentkezés */}
                     <div>
                         {isLoggedIn ? (
-                            <button
-                                onClick={handleLogout}
-                                style={{
-                                    padding: '5px 15px',
-                                    borderRadius: '6px',
-                                    border: 'none',
-                                    backgroundColor: '#555555',
-                                    color: 'white',
-                                    cursor: 'pointer',
-                                }}
-                            >
-                                Kijelentkezés
-                            </button>
+                            <div style={{ display: "flex", alignItems: "center", gap: "15px" }}>
+
+                                {/* Email kiírása */}
+                                <span style={{ fontSize: "14px", color: "#ddd" }}>
+                                    {user?.email}
+                                </span>
+
+                                {/* Kijelentkezés gomb */}
+                                <button
+                                    onClick={handleLogout}
+                                    style={{
+                                        padding: '5px 15px',
+                                        borderRadius: '6px',
+                                        border: 'none',
+                                        backgroundColor: '#555555',
+                                        color: 'white',
+                                        cursor: 'pointer',
+                                    }}
+                                >
+                                    Kijelentkezés
+                                </button>
+
+                            </div>
                         ) : (
                             <button
                                 onClick={() => setModalOpen(true)}
@@ -392,5 +409,13 @@ export default function Layout({ children }) {
                 )}
             </div>
         </div>
-    );
+                <ToastContainer
+                    position="top-right"
+                    autoClose={2000}
+                    toastClassName="toast-dark"
+                    hideProgressBar={false}
+                    theme="dark"
+                />
+            </>
+        );
 }

@@ -3,7 +3,7 @@ import Layout from './Layout';
 import theater1 from './assets/theater1.jpg';
 import theater2 from './assets/theater2.jpg';
 import theater3 from './assets/theater3.jpg';
-
+//uj sor asd
 export default function HomePage() {
     return (
         <Layout>

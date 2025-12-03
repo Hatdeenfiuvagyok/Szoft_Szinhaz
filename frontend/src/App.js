@@ -3,7 +3,10 @@ import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-route
 import './App.css';
 import theaterImg from './assets/theater.jpg';
 import HomePage from './HomePage';
+import CsokonaiPage from './CsokonaiPage';
 import ReservationPage from './ReservationPage';
+import KapcsolatPage from './KapcsolatPage';
+import AdminPage from './AdminPage';
 import { AuthProvider } from './AuthContext';
 
 function Home() {
@@ -38,7 +41,7 @@ function Home() {
                     textShadow: '2px 2px 8px rgba(0,0,0,0.7)',
                 }}
             >
-                Magyar Színházak helyfoglalása
+                Debreceni Színházak helyfoglalása
             </h1>
 
             <button
@@ -69,7 +72,10 @@ function App() {
                 <Routes>
                     <Route path="/" element={<Home />} />
                     <Route path="/home" element={<HomePage />} />
+                    <Route path="/csokonai" element={<CsokonaiPage />} />
+                    <Route path="/kapcsolat" element={<KapcsolatPage />} />
                     <Route path="/reservation" element={<ReservationPage />} />
+                    <Route path="/admin-4682-panel" element={<AdminPage />} />
                 </Routes>
             </Router>
         </AuthProvider>
