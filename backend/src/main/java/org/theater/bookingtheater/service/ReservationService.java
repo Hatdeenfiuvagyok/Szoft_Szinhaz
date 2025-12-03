@@ -39,13 +39,8 @@ public class ReservationService {
     }
 
     public List<String> getBookedSeats(Long performanceId) {
-
-        Performance perf = performanceRepository.findById(performanceId)
-                .orElseThrow(() -> new RuntimeException("Performance not found"));
-
-        return reservationRepository.findAll()
+        return reservationRepository.findByPerformanceId(performanceId)
                 .stream()
-                .filter(r -> r.getPerformance().getId().equals(performanceId))
                 .map(Reservation::getSeatId)
                 .toList();
     }

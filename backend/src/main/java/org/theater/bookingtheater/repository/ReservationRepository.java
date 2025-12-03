@@ -11,4 +11,5 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
     boolean existsByPerformanceAndSeatId(Performance performance, String seatId);
     List<Reservation> findByPerformanceIdAndCustomerName(Long performanceId, String customerName);
     List<Reservation> findByCustomerName(String customerName);
+    List<Reservation> findByPerformanceId(Long performanceId);
 }

@@ -5,6 +5,9 @@ export default function AdminReservationTable() {
     const [performances, setPerformances] = useState([]);
     const [loading, setLoading] = useState(true);
 
+    const [newSeatError, setNewSeatError] = useState("");
+    const [editSeatError, setEditSeatError] = useState("");
+
     // szerkesztés állapota
     const [editId, setEditId] = useState(null);
     const [editData, setEditData] = useState({
@@ -48,16 +51,28 @@ export default function AdminReservationTable() {
 
     // új sor input kezelő
     const handleChangeNew = (e) => {
-        setNewPerformance({
-            ...newPerformance,
-            [e.target.name]: e.target.value,
-        });
+        const { name, value } = e.target;
+
+        if (name === "totalSeats") {
+            const num = Number(value);
+
+            if (value !== "" && (num < 1 || num > 425)) {
+                setNewSeatError("Az értéknek 1 és 425 között kell lennie!");
+            } else {
+                setNewSeatError("");
+            }
+        }
+
+        setNewPerformance((prev) => ({
+            ...prev,
+            [name]: value,
+        }));
     };
 
     // új előadás hozzáadása
     const handleAddPerformance = async () => {
-        if (!isNewPerformanceValid) {
-            alert("Kérlek tölts ki minden mezőt!");
+        if (!isNewPerformanceValid || newSeatError) {
+            alert("Kérlek tölts ki minden mezőt helyesen!");
             return;
         }
 
@@ -74,7 +89,7 @@ export default function AdminReservationTable() {
 
         const saved = await res.json();
 
-        setPerformances([...performances, saved]);
+        setPerformances((prev) => [...prev, saved]);
 
         setNewPerformance({
             title: "",
@@ -83,6 +98,7 @@ export default function AdminReservationTable() {
             totalSeats: "",
             dateTime: "",
         });
+        setNewSeatError("");
 
         alert("Előadás sikeresen hozzáadva!");
     };
@@ -100,12 +116,13 @@ export default function AdminReservationTable() {
             return;
         }
 
-        setPerformances(performances.filter((p) => p.id !== id));
+        setPerformances((prev) => prev.filter((p) => p.id !== id));
     };
 
     // módosítás indítása
     const startEdit = (item) => {
         setEditId(item.id);
+        setEditSeatError("");
         setEditData({
             title: item.title,
             theater: item.theater,
@@ -117,14 +134,31 @@ export default function AdminReservationTable() {
 
     // módosítás értékkezelő
     const handleChange = (e) => {
-        setEditData({
-            ...editData,
-            [e.target.name]: e.target.value,
-        });
+        const { name, value } = e.target;
+
+        if (name === "totalSeats") {
+            const num = Number(value);
+
+            if (value !== "" && (num < 1 || num > 425)) {
+                setEditSeatError("Az értéknek 1 és 425 között kell lennie!");
+            } else {
+                setEditSeatError("");
+            }
+        }
+
+        setEditData((prev) => ({
+            ...prev,
+            [name]: value,
+        }));
     };
 
     // módosítás mentése
     const saveEdit = async () => {
+        if (editSeatError) {
+            alert("Kérlek javítsd a hibákat mentés előtt!");
+            return;
+        }
+
         const res = await fetch(`http://localhost:8080/api/performances/${editId}`, {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
@@ -142,11 +176,13 @@ export default function AdminReservationTable() {
 
         setPerformances(updated);
         setEditId(null);
+        setEditSeatError("");
     };
 
     // módosítás törlése
     const cancelEdit = () => {
         setEditId(null);
+        setEditSeatError("");
     };
 
     // szűrés múltbeli / jövőbeli szerint
@@ -266,6 +302,12 @@ export default function AdminReservationTable() {
                                             onChange={handleChangeNew}
                                             style={inputStyle}
                                         />
+
+                                        {newSeatError && (
+                                            <div style={{ color: "red", fontSize: "12px" }}>
+                                                {newSeatError}
+                                            </div>
+                                        )}
                                     </td>
 
                                     <td style={cellStyle}>
@@ -282,12 +324,14 @@ export default function AdminReservationTable() {
                                         <button
                                             style={{
                                                 ...saveButtonStyle,
-                                                opacity: isNewPerformanceValid ? 1 : 0.5,
-                                                cursor: isNewPerformanceValid
-                                                    ? "pointer"
-                                                    : "not-allowed",
+                                                opacity:
+                                                    !isNewPerformanceValid || newSeatError ? 0.5 : 1,
+                                                cursor:
+                                                    !isNewPerformanceValid || newSeatError
+                                                        ? "not-allowed"
+                                                        : "pointer",
                                             }}
-                                            disabled={!isNewPerformanceValid}
+                                            disabled={!isNewPerformanceValid || !!newSeatError}
                                             onClick={handleAddPerformance}
                                         >
                                             Hozzáadás
@@ -364,15 +408,34 @@ export default function AdminReservationTable() {
 
                                         {/* HELYEK (függ a nézettől) */}
                                         <td style={cellStyle}>
-                                            {showPast ? (
+                                            {isEditing ? (
                                                 <>
-                                                    <div>Lefoglalható: {(item.totalSeats )}</div>
-                                                    <div>Lefoglalt: {(item.bookedCount)}</div>
+                                                    <input
+                                                        type="number"
+                                                        name="totalSeats"
+                                                        value={editData.totalSeats}
+                                                        onChange={handleChange}
+                                                        style={inputStyle}
+                                                    />
+
+                                                    {editSeatError && (
+                                                        <div
+                                                            style={{
+                                                                color: "red",
+                                                                fontSize: "12px",
+                                                            }}
+                                                        >
+                                                            {editSeatError}
+                                                        </div>
+                                                    )}
+                                                </>
+                                            ) : showPast ? (
+                                                <>
+                                                    <div>Lefoglalható: {item.totalSeats}</div>
+                                                    <div>Lefoglalt: {item.bookedCount}</div>
                                                 </>
                                             ) : (
-                                                <>
-                                                    <div>Lefoglalható: {item.totalSeats} fő</div>
-                                                </>
+                                                <div>{item.totalSeats}</div>
                                             )}
                                         </td>
 
@@ -416,6 +479,7 @@ export default function AdminReservationTable() {
                                                         <button
                                                             style={saveButtonStyle}
                                                             onClick={saveEdit}
+                                                            disabled={!!editSeatError}
                                                         >
                                                             Mentés
                                                         </button>

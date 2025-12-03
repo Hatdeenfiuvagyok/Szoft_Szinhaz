@@ -21,25 +21,8 @@ public class PerformanceController {
     //        GET ALL
     // =====================
     @GetMapping
-    public List<Performance> getAllPerformances() {
-
-        List<Performance> list = performanceRepository.findAll();
-        LocalDateTime now = LocalDateTime.now();
-
-        for (Performance p : list) {
-            // ha az előadás már elmúlt
-            if (p.getDateTime().isBefore(now)) {
-                // Csak akkor számoljuk ki, ha még nem számoltuk ki korábban
-                if (p.getBookedCount() == null) {
-                    int bookedSeats = p.getReservations().size();
-                    p.setBookedCount(bookedSeats);
-
-                    performanceRepository.save(p);
-                }
-            }
-        }
-
-        return list;
+    public List<Performance> getAll() {
+        return performanceRepository.findAllWithReservations();
     }
 
     // =====================

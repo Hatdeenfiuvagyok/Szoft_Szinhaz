@@ -24,9 +24,18 @@ public class Performance {
     private LocalDateTime dateTime;
     private double basePrice;
     private int totalSeats;
-    private Integer bookedCount;
-    // 🔥 EZ A RÉSZ HIÁNYZOTT
-    @OneToMany(mappedBy = "performance", cascade = CascadeType.REMOVE, orphanRemoval = true)
+
+    // ❗ NEM tároljuk el, hanem csak lekéréskor számoljuk
+    public Integer getBookedCount() {
+        return (reservations != null) ? reservations.size() : 0;
+    }
+
+    @OneToMany(
+            mappedBy = "performance",
+            cascade = CascadeType.REMOVE,
+            orphanRemoval = true,
+            fetch = FetchType.LAZY
+    )
     @JsonIgnore
     private List<Reservation> reservations;
 }

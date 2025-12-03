@@ -6,7 +6,7 @@ import { toast } from "react-toastify";
 
 export default function ReservationPage() {
     const { isLoggedIn, user } = useAuth();
-
+    const [showGallery, setShowGallery] = useState(false);
     const [performances, setPerformances] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -17,6 +17,19 @@ export default function ReservationPage() {
     const [dynamicPrice, setDynamicPrice] = useState(null); // ⭐ új
 
     const [userBookedPerformanceIds, setUserBookedPerformanceIds] = useState(new Set());
+
+    const loadUserReservations = async () => {
+        if (!user) return;
+
+        const response = await fetch(
+            `http://localhost:8080/api/reservations/user?customerName=${user.email}`
+        );
+
+        const data = await response.json();
+
+        const ids = new Set(data.map(r => r.performance.id));
+        setUserBookedPerformanceIds(ids);
+    };
 
     // ⭐⭐⭐ Dinamikus ár függvény
     function calculateDynamicPrice(performance, index) {
@@ -124,9 +137,9 @@ export default function ReservationPage() {
                 })
             );
 
+        // Csak a középtér frissítése
         layout.center = updateStatus(layout.center);
-        layout.left = updateStatus(layout.left);
-        layout.right = updateStatus(layout.right);
+        layout.gallery = updateStatus(layout.gallery);
 
         setSeatMap(layout);
     };
@@ -155,38 +168,39 @@ export default function ReservationPage() {
     //         CONFIRM RESERVATION
     // =====================================
     const handleConfirmReservation = async () => {
-        if (selectedSeats.length === 0) {
-            toast.error("Válassz ki legalább egy helyet!");
-            return;
-        }
-
-        try {
-            for (const seat of selectedSeats) {
-                const reservationData = {
-                    customerName: user.email,
-                    seatId: seat.id,
-                    performance: { id: selectedPerformance.id },
-                    bookingTime: new Date().toISOString()
-                };
-
-                await fetch("http://localhost:8080/api/reservations", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(reservationData),
-                });
+            if (selectedSeats.length === 0) {
+                toast.error('Válassz ki legalább egy helyet!');
+                return;
             }
 
-            const newSet = new Set(userBookedPerformanceIds);
-            newSet.add(selectedPerformance.id);
-            setUserBookedPerformanceIds(newSet);
+            try {
+                for (const seat of selectedSeats) {
+                    const reservationData = {
+                        customerName: user.email,
+                        seatId: seat.id,
+                        performance: { id: selectedPerformance.id },
+                    };
 
-            toast.success("Foglalás sikeres!");
-            closeReservationModal();
-        } catch (error) {
-            console.error(error);
-            toast.error("Hiba történt a foglalás közben.");
-        }
-    };
+                    console.log(reservationData)
+
+                    await fetch("http://localhost:8080/api/reservations", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(reservationData),
+                    });
+                }
+              // sikeres foglalás → frissítsük a listát
+                const newSet = new Set(userBookedPerformanceIds);
+                newSet.add(selectedPerformance.id);
+                setUserBookedPerformanceIds(newSet);
+
+                toast.success("Foglalás sikeres!");
+                closeReservationModal();
+            } catch (error) {
+                console.error(error);
+                toast.error("Hiba történt a foglalás közben.");
+            }
+        };
 
     // ==============================
     //             RENDER
@@ -225,13 +239,15 @@ export default function ReservationPage() {
                                 width: '100%',
                                 borderCollapse: 'collapse',
                                 backgroundColor: 'rgba(50, 50, 50, 0.8)',
+                                tableLayout: "fixed"
                             }}
                         >
-                            <thead style={{ backgroundColor: '#444' }}>
+                            <thead style={{backgroundColor: '#444' }}>
                                 <tr>
                                     <th style={headerStyle}>Dátum</th>
                                     <th style={headerStyle}>Színház</th>
                                     <th style={headerStyle}>Színdarab</th>
+                                    <th style={headerStyle}>Férőhely</th>
                                     <th style={headerStyle}>Alap Ár (Ft)</th>
                                     <th style={headerStyle}>Foglalás</th>
                                 </tr>
@@ -250,33 +266,44 @@ export default function ReservationPage() {
                                         </td>
                                         <td style={cellStyle}>{item.theater}</td>
                                         <td style={cellStyle}>{item.title}</td>
+                                        <td style={cellStyle}>{item.totalSeats}</td>
                                         <td style={cellStyle}>
                                             {Number(item.basePrice).toLocaleString()}
                                         </td>
                                         <td style={cellStyle}>
                                             {isLoggedIn ? (
-                                                userBookedPerformanceIds.has(item.id) ? (
-                                                    <button
-                                                        onClick={() => cancelReservation(item.id)}
-                                                        style={{
-                                                            ...reserveButtonStyle,
-                                                            backgroundColor: '#b71c1c',
-                                                        }}
-                                                    >
-                                                        Foglalás törlése
-                                                    </button>
-                                                ) : (
+                                                <div style={{
+                                                    display: "flex",
+                                                    gap: "10px",                 // távolság a gombok között
+                                                    justifyContent: "center"     // középre igazítja
+                                                }}>
+
+                                                    {/* Foglalás gomb — mindig jelen van */}
                                                     <button
                                                         onClick={() => openReservationModal(item, index)}
-                                                        style={reserveButtonStyle}
+                                                        style={{
+                                                            ...reserveButtonStyle,
+                                                            backgroundColor: "#4caf50",
+                                                        }}
                                                     >
                                                         Foglalás
                                                     </button>
-                                                )
+
+                                                    {/* Törlés — csak ha már foglalt */}
+                                                    {userBookedPerformanceIds.has(item.id) && (
+                                                        <button
+                                                            onClick={() => cancelReservation(item.id)}
+                                                            style={{
+                                                                ...reserveButtonStyle,
+                                                                backgroundColor: "#b71c1c",
+                                                            }}
+                                                        >
+                                                            Foglalás törlése
+                                                        </button>
+                                                    )}
+                                                </div>
                                             ) : (
-                                                <span style={{ color: 'lightcoral' }}>
-                                                    Jelentkezz be
-                                                </span>
+                                                <span style={{ color: "lightcoral" }}>Jelentkezz be</span>
                                             )}
                                         </td>
                                     </tr>
@@ -316,69 +343,53 @@ function RenderModal({
     closeReservationModal,
     dynamicPrice
 }) {
+
+    // nézetváltó állapot
+    const [showGallery, setShowGallery] = React.useState(false);
+
     return (
         <div style={modalOverlayStyle}>
             <div style={modalContainerStyle}>
-                {/* Bezáró X gomb */}
-                <button
-                    onClick={closeReservationModal}
-                    style={{
-                        position: 'absolute',
-                        top: '10px',
-                        right: '15px',
-                        background: 'transparent',
-                        border: 'none',
-                        color: 'white',
-                        fontSize: '24px',
-                        cursor: 'pointer'
-                    }}
-                >
-                    ×
-                </button>
+            {/* Jobb felső bezáró X */}
+            <button
+                onClick={closeReservationModal}
+                style={{
+                    position: "absolute",
+                    top: "10px",
+                    right: "15px",
+                    background: "transparent",
+                    border: "none",
+                    color: "white",
+                    fontSize: "26px",
+                    cursor: "pointer"
+                }}
+            >
+                ×
+            </button>
 
-                {/* Bal oldal */}
+                {/* ============================
+                    BAL OLDAL — INFO
+                ============================ */}
                 <div style={leftColumnStyle}>
                     <h2>{selectedPerformance.title}</h2>
-                    <p style={{ margin: '8px 0' }}><strong>Színház:</strong> {selectedPerformance.theater}</p>
-                    <p style={{ margin: '8px 0' }}>
-                        <strong>Időpont:</strong>{' '}
-                        {new Date(selectedPerformance.dateTime).toLocaleString('hu-HU')}
-                    </p>
-                    <p style={{ margin: '8px 0' }}><strong>Összes férőhely:</strong> {selectedPerformance.totalSeats}</p>
+                    <p><strong>Színház:</strong> {selectedPerformance.theater}</p>
+                    <p><strong>Időpont:</strong> {new Date(selectedPerformance.dateTime).toLocaleString('hu-HU')}</p>
+                    <p><strong>Összes férőhely:</strong> {selectedPerformance.totalSeats}</p>
+                    <p><strong>Helyek:</strong> {selectedSeats.length}</p>
 
-                    <p style={{ margin: '8px 0' }}><strong>Helyek:</strong> {selectedSeats.length}</p>
-
-                    {/* ⭐ Dinamikus ár mutatása */}
-                    <p style={{ margin: '8px 0' }}><strong>Jegy ár:</strong> {selectedPerformance.basePrice} Ft</p>
-
-                    <p style={{ margin: '8px 0' }}>
-                        <strong>Összesen:</strong>{' '}
-                        {(dynamicPrice * selectedSeats.length).toLocaleString()} Ft
-                    </p>
-
-                    {/* ⭐ Tájékoztató szöveg – halvány, kisebb betűméret */}
-                    <p style={{
-                        fontSize: '12px',
-                        color: 'lightgray',
-                        marginTop: '10px',
-                        marginBottom: '10px',
-                        lineHeight: '1.4'
-                    }}>
-                        Az előadást megelőző két napban a jegyárak 5%-kal növekednek.<br />
-                        A foglalás érvényesítéséhez kérjük, érkezzenek meg az előadás előtt legalább fél órával.
-                    </p>
+                    <p><strong>Jegy ár:</strong> {selectedPerformance.basePrice} Ft</p>
+                    <p><strong>Összesen:</strong> {(dynamicPrice * selectedSeats.length).toLocaleString()} Ft</p>
 
                     <button
                         onClick={handleConfirmReservation}
                         style={{
-                            marginTop: '20px',
-                            width: '100%',
-                            padding: '10px',
-                            backgroundColor: '#4caf50',
-                            color: 'white',
-                            borderRadius: '6px',
-                            border: 'none',
-                            cursor: 'pointer',
+                            marginTop: "20px",
+                            width: "100%",
+                            padding: "10px",
+                            backgroundColor: "#4caf50",
+                            color: "white",
+                            border: "none",
+                            borderRadius: "6px"
                         }}
                     >
                         Foglalás véglegesítése
@@ -387,136 +398,287 @@ function RenderModal({
                     <button
                         onClick={closeReservationModal}
                         style={{
-                            marginTop: '10px',
-                            width: '100%',
-                            padding: '8px',
-                            backgroundColor: '#777',
-                            color: 'white',
-                            borderRadius: '6px',
-                            border: 'none',
+                            marginTop: "10px",
+                            width: "100%",
+                            padding: "8px",
+                            backgroundColor: "#777",
+                            color: "white",
+                            border: "none",
+                            borderRadius: "6px"
                         }}
                     >
                         Mégse
                     </button>
                 </div>
 
-                {/* Jobb oldal */}
+                {/* ============================
+                    JOBB OLDAL — NÉZŐTÉR
+                ============================ */}
                 <div style={rightColumnStyle}>
                     <div
                         style={{
-                            marginBottom: '8px',
-                            textAlign: 'center',
-                            fontSize: '12px',
-                            padding: '4px 0',
-                            borderBottom: '1px solid #666',
+                            height: "40px",
+                            display: "flex",
+                            flexDirection: "column",
+                            justifyContent: "center"
                         }}
                     >
-                        SZÍNPAD
-                    </div>
-
-                    <div style={seatLayoutWrapperStyle}>
-
-                        {/* Bal galéria */}
-                        <div style={leftGalleryStyle}>
-                            {seatMap.left.map((row, idx) => (
-                                <SeatRow
-                                    key={`L-${idx}`}
-                                    row={row}
-                                    alignment="right"
-                                    offset={idx}
-                                    onSeatClick={handleSeatClick}
-                                    selectedSeats={selectedSeats}
-                                />
-                            ))}
-                        </div>
-
-                        {/* Középső blokk */}
-                        <div style={centerBlockStyle}>
-                            {seatMap.center.map((row, idx) => (
-                                <SeatRow
-                                    key={`C-${idx}`}
-                                    row={row}
-                                    alignment="center"
-                                    offset={idx}
-                                    onSeatClick={handleSeatClick}
-                                    selectedSeats={selectedSeats}
-                                />
-                            ))}
-                        </div>
-
-                        {/* Jobb galéria */}
-                        <div style={rightGalleryStyle}>
-                            {seatMap.right.map((row, idx) => (
-                                <SeatRow
-                                    key={`R-${idx}`}
-                                    row={row}
-                                    alignment="left"
-                                    offset={idx}
-                                    onSeatClick={handleSeatClick}
-                                    selectedSeats={selectedSeats}
-                                />
-                            ))}
-                        </div>
-                    </div>
-
-                    <div style={{ marginTop: '20px', textAlign: 'center' }}>
-                        <strong>Válaszd ki a helyed!</strong>
                         <div
                             style={{
-                                display: 'flex',
-                                justifyContent: 'center',
-                                gap: '15px',
-                                marginTop: '10px',
-                                fontSize: '12px',
+                                textAlign: "center",
+                                fontSize: "15px",
+                                marginBottom: "6px"
                             }}
                         >
-                            <Legend color="#4caf50" label="Szabad" />
-                            <Legend color="#b71c1c" label="Nem elérhető" />
-                            <Legend color="#2196f3" label="Kiválasztott" />
+                            Színpad
                         </div>
+
+                        <div
+                            style={{
+                                width: "100%",
+                                height: "1px",
+                                backgroundColor: "#666",
+                                marginRight: "20px",
+                                width: "calc(100% - 20px)"
+                            }}
+                        ></div>
                     </div>
+                    {/* --------------------------
+                        GALÉRIA — FÉLKÖR
+                    -------------------------- */}
+                    {showGallery && (
+                        <div
+                            style={{
+                                position: "relative",
+                                width: "650px",
+                                height: "350px",
+                                margin: "0 auto",
+                                marginTop: "0px",
+                            }}
+                        >
+                            {seatMap.gallery.map((row, ri) => (
+                                <React.Fragment key={ri}>
+                                    {row.map(seat => {
+                                        const isSelected = selectedSeats.some(s => s.id === seat.id);
+
+                                        return (
+                                            <div
+                                                key={seat.id}
+                                                onClick={() =>
+                                                    seat.status === "available" && handleSeatClick(seat)
+                                                }
+                                                style={{
+                                                    position: "absolute",
+                                                    left: seat.x + 325,
+                                                    top: 40 + seat.y,
+                                                    width: "22px",
+                                                    height: "22px",
+                                                    borderRadius: "6px",
+                                                    backgroundColor:
+                                                        seat.status === "unavailable"
+                                                            ? "#b71c1c"
+                                                            : isSelected
+                                                            ? "#2196f3"
+                                                            : "#4caf50",
+                                                    cursor:
+                                                        seat.status === "unavailable"
+                                                            ? "not-allowed"
+                                                            : "pointer",
+                                                    fontSize: "8px",
+                                                    color: "black",
+                                                    display: "flex",
+                                                    alignItems: "center",
+                                                    justifyContent: "center"
+                                                }}
+                                            >
+                                                {seat.label}
+                                            </div>
+                                        );
+                                    })}
+                                </React.Fragment>
+                            ))}
+                        </div>
+                    )}
+                    {/* BAL ALSÓ SAROKBAN LÉVŐ KICSI NYÍL */}
+                    <button
+                        onClick={() => setShowGallery(!showGallery)}
+                        style={{
+                            position: "absolute",
+                            bottom: "10px",
+                            right: "10px",
+                            background: "rgba(255,255,255,0.1)",
+                            border: "1px solid #666",
+                            borderRadius: "50%",
+                            width: "38px",
+                            height: "38px",
+                            fontSize: "20px",
+                            color: "white",
+                            cursor: "pointer",
+                            backdropFilter: "blur(3px)"
+                        }}
+                    >
+                        {showGallery ? "▼" : "▲"}
+                    </button>
+                    {/* --------------------------
+                        KÖZÉP NÉZŐTÉR
+                    -------------------------- */}
+                    {!showGallery && (
+                        <div style={{ marginTop: "0px" }}>
+                            {seatMap.center.map((row, ri) => (
+                                <div
+                                    key={ri}
+                                    style={{ display: "flex", justifyContent: "center", marginBottom: "4px" }}
+                                >
+                                    {row.map(seat => {
+                                        const isSelected = selectedSeats.some(s => s.id === seat.id);
+
+                                        return (
+                                            <div
+                                                key={seat.id}
+                                                onClick={() =>
+                                                    seat.status === "available" && handleSeatClick(seat)
+                                                }
+                                                style={{
+                                                    width: "20px",
+                                                    height: "20px",
+                                                    borderRadius: "4px",
+                                                    margin: "2px",
+                                                    backgroundColor:
+                                                        seat.status === "unavailable"
+                                                            ? "#b71c1c"
+                                                            : isSelected
+                                                            ? "#2196f3"
+                                                            : "#4caf50",
+                                                    cursor:
+                                                        seat.status === "unavailable"
+                                                            ? "not-allowed"
+                                                            : "pointer",
+                                                    fontSize: "8px",
+                                                    color: "black",
+                                                    display: "flex",
+                                                    alignItems: "center",
+                                                    justifyContent: "center"
+                                                }}
+                                            >
+                                                {seat.label}
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            ))}
+                        </div>
+                    )
+                    }
+
+                    {/* --------------------------
+                        JELMAGYARÁZAT
+                    -------------------------- */}
+                    <div style={{ marginTop: "20px", textAlign: "center" }}>
+                        <Legend color="#4caf50" label="Szabad" />
+                        <Legend color="#b71c1c" label="Foglalt" />
+                        <Legend color="#2196f3" label="Kiválasztott" />
+                    </div>
+
                 </div>
             </div>
         </div>
     );
 }
 
+
 /* ==========================================================
    ÜLÉSREND GENERÁTOR + SEATROW + LEGEND + STYLES
 ========================================================== */
 
 function generateSeatLayout(totalSeats) {
-    const centerRowSizes = [8, 8, 10, 10, 12, 12, 14, 14, 16, 16];
 
-    const center = centerRowSizes.map((seatCount, rowIndex) =>
-        Array.from({ length: seatCount }, (_, i) => ({
-            id: `C-${rowIndex + 1}-${i + 1}`,
-            label: i + 1,
-            status: 'available',
+    /* ===============================
+       1) KÖZÉP NÉZŐTÉR
+    =============================== */
+    const seatsPerRow = 25;
+    const numberOfRows = 12;
+
+    const center = Array.from({ length: numberOfRows }, (_, r) =>
+        Array.from({ length: seatsPerRow }, (_, s) => ({
+            id: `C-${r + 1}-${s + 1}`,
+            label: s + 1,
+            status: "available",
         }))
     );
 
-    const galleryRows = 6;
-    const galleryPerRow = 5;
+    /* ===============================
+       2) GALÉRIA – TÖBB FÉLKÖR
+    =============================== */
 
-    const enableRightGallery = totalSeats >= 150;
-    const enableLeftGallery = totalSeats >= 200;
+    const galleryRows = 5;
+    const seatsPerGalleryRow = 25;
 
-    const makeRow = (prefix, rowIndex, count, status) =>
-        Array.from({ length: count }, (_, i) => ({
-            id: `${prefix}-${rowIndex + 1}-${i + 1}`,
-            label: i + 1,
-            status,
-        }));
+    const baseRadius = 200;
+    const radiusStep = 30;
 
-    const left = [];
-    const right = [];
+    const gallery = [];
+
     for (let r = 0; r < galleryRows; r++) {
-        left.push(makeRow('L', r, galleryPerRow, enableLeftGallery ? 'available' : 'disabled'));
-        right.push(makeRow('R', r, galleryPerRow, enableRightGallery ? 'available' : 'disabled'));
+
+        const radius = baseRadius + r * radiusStep;
+        const row = [];
+
+        for (let i = 0; i < seatsPerGalleryRow; i++) {
+
+            const angle = Math.PI * (i / (seatsPerGalleryRow - 1));
+
+            const x = radius * Math.cos(angle);
+            const y = radius * Math.sin(angle);
+
+            row.push({
+                id: `G-${r + 1}-${i + 1}`,
+                label: i + 1,
+                status: "available",
+                x,
+                y
+            });
+        }
+
+        gallery.push(row);
+    }
+    // ===============================
+    // 3) Felesleges székek tiltása
+    // ===============================
+
+    const allSeats = [
+        ...gallery.flat(),        // galéria összes széke
+        ...center.flat()          // középső rész összes széke
+    ];
+
+    const totalGenerated = allSeats.length;
+    const extraSeats = totalGenerated - totalSeats;
+
+    // ha több széket generáltunk, mint amennyi kell
+    if (extraSeats > 0) {
+
+        let remaining = extraSeats;
+
+        // 3/A – először GALÉRIA székek tiltása (hátulról indulva)
+        for (let r = gallery.length - 1; r >= 0 && remaining > 0; r--) {
+            for (let i = gallery[r].length - 1; i >= 0 && remaining > 0; i--) {
+                gallery[r][i].status = "unavailable";
+                remaining--;
+            }
+        }
+
+        // 3/B – ha még mindig van extra: középső sorokat tiltjuk
+        for (let r = center.length - 1; r >= 0 && remaining > 0; r--) {
+            for (let i = center[r].length - 1; i >= 0 && remaining > 0; i--) {
+                center[r][i].status = "unavailable";
+                remaining--;
+            }
+        }
     }
 
-    return { center, left, right };
+    return {
+        center,
+        gallery
+    };
 }
 
 function SeatRow({ row, alignment, offset, onSeatClick, selectedSeats }) {
@@ -627,7 +789,7 @@ const modalContainerStyle = {
     position: 'relative',
     display: 'flex',
     width: '100%',
-    maxWidth: '1000px',
+    maxWidth: '1100px',
     maxHeight: '85%',
     backgroundColor: '#222',
     borderRadius: '10px',
@@ -657,22 +819,6 @@ const seatLayoutWrapperStyle = {
     justifyContent: 'space-between',
     alignItems: 'flex-start',
     marginTop: '10px',
-};
-
-const leftGalleryStyle = {
-    width: '25%',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    marginTop: '45px',
-};
-
-const rightGalleryStyle = {
-    width: '25%',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    marginTop: '45px',
 };
 
 const centerBlockStyle = {
