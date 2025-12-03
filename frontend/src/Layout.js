@@ -106,11 +106,11 @@ export default function Layout({ children }) {
     };
 
     const menuItems = [
-        { name: 'Csokonai Színház', path: '/home' },
+        { name: 'Csokonai Színház', path: '/Csokonai' },
         { name: 'Vojtina Színház', path: '/home' },
         { name: 'Vidám Színház', path: '/home' },
         { name: 'Foglalás', path: '/reservation' },
-        { name: 'Kapcsolat', path: '/home' },
+        { name: 'Kapcsolat', path: '/Kapcsolat' },
     ];
 
     return (
