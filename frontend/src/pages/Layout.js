@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import theaterImg from './assets/theater.jpg';
+import theaterImg from '../assets/theater.jpg';
 import { useAuth } from './AuthContext';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import './toast.css';
+import '../css/toast.css';
 
 export default function Layout({ children }) {
     const { isLoggedIn, setIsLoggedIn, user, setUser } = useAuth();

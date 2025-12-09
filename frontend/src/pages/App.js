@@ -1,14 +1,14 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
-import './App.css';
-import theaterImg from './assets/theater.jpg';
-import HomePage from './HomePage';
-import CsokonaiPage from './CsokonaiPage';
-import VojtinaPage from './VojtinaPage';
-import VidamPage from './VidamPage';
-import ReservationPage from './ReservationPage';
-import KapcsolatPage from './KapcsolatPage';
-import AdminPage from './AdminPage';
+import '../css/App.css';
+import theaterImg from '../assets/theater.jpg';
+import HomePage from '../pages/HomePage';
+import CsokonaiPage from '../pages/CsokonaiPage';
+import VojtinaPage from '../pages/VojtinaPage';
+import VidamPage from '../pages/VidamPage';
+import ReservationPage from '../pages/ReservationPage';
+import KapcsolatPage from '../pages/KapcsolatPage';
+import AdminPage from '../pages/AdminPage';
 import { AuthProvider } from './AuthContext';
 
 function Home() {

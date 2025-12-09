@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import Layout from './Layout';
+import Layout from '../pages/Layout';
 import { useAuth } from './AuthContext';
-import './scrollableDiv.css';
+import '../css/scrollableDiv.css';
 import { toast } from "react-toastify";
 
 export default function ReservationPage() {
     const { isLoggedIn, user } = useAuth();
-    const [showGallery, setShowGallery] = useState(false);
     const [performances, setPerformances] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -18,21 +17,8 @@ export default function ReservationPage() {
 
     const [userBookedPerformanceIds, setUserBookedPerformanceIds] = useState(new Set());
 
-    const loadUserReservations = async () => {
-        if (!user) return;
-
-        const response = await fetch(
-            `http://localhost:8080/api/reservations/user?customerName=${user.email}`
-        );
-
-        const data = await response.json();
-
-        const ids = new Set(data.map(r => r.performance.id));
-        setUserBookedPerformanceIds(ids);
-    };
-
     // ⭐⭐⭐ Dinamikus ár függvény
-    function calculateDynamicPrice(performance, index) {
+    function calculateDynamicPrice(performance) {
         let price = performance.basePrice;
 
         // 2) Előadás előtt 2 nap → +5%
@@ -112,12 +98,12 @@ export default function ReservationPage() {
     // =====================================
     //         OPEN MODAL (Seats)
     // =====================================
-    const openReservationModal = async (performance, index) => {
+    const openReservationModal = async (performance) => {
         setSelectedPerformance(performance);
         setSelectedSeats([]);
 
         // ⭐ dinamikus ár kiszámítása itt
-        const dynPrice = calculateDynamicPrice(performance, index);
+        const dynPrice = calculateDynamicPrice(performance);
         setDynamicPrice(dynPrice);
 
         const layout = generateSeatLayout(performance.totalSeats || 0);
@@ -253,7 +239,7 @@ export default function ReservationPage() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {performances.map((item, index) => (
+                                {performances.map((item) => (
                                     <tr
                                         key={item.id}
                                         style={{
@@ -280,7 +266,7 @@ export default function ReservationPage() {
 
                                                     {/* Foglalás gomb — mindig jelen van */}
                                                     <button
-                                                        onClick={() => openReservationModal(item, index)}
+                                                        onClick={() => openReservationModal(item)}
                                                         style={{
                                                             ...reserveButtonStyle,
                                                             backgroundColor: "#4caf50",
@@ -444,7 +430,6 @@ function RenderModal({
 
                         <div
                             style={{
-                                width: "100%",
                                 height: "1px",
                                 backgroundColor: "#666",
                                 marginRight: "20px",
@@ -689,58 +674,6 @@ function generateSeatLayout(totalSeats) {
         gallery
     };
 }
-
-function SeatRow({ row, alignment, offset, onSeatClick, selectedSeats }) {
-    let rowStyle = {
-        display: 'flex',
-        justifyContent: 'center',
-        flexDirection: 'row',
-        marginBottom: 4,
-    };
-
-    if (alignment === 'right') {
-        rowStyle.transform = `rotate(12deg)`;
-    }
-
-    if (alignment === 'left') {
-        rowStyle.transform = `rotate(-12deg)`;
-    }
-
-    return (
-        <div style={rowStyle}>
-            {row.map((seat) => {
-                const isSelected = selectedSeats.some((s) => s.id === seat.id);
-
-                let backgroundColor = seat.status === 'available' ? '#4caf50' : '#b71c1c';
-                if (isSelected) backgroundColor = '#2196f3';
-
-                const seatStyle = {
-                    width: 20,
-                    height: 20,
-                    borderRadius: 4,
-                    margin: 2,
-                    fontSize: '10px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    cursor: seat.status === 'available' ? 'pointer' : 'default',
-                    backgroundColor,
-                };
-
-                return (
-                    <div
-                        key={seat.id}
-                        style={seatStyle}
-                        onClick={() => onSeatClick(seat)}
-                    >
-                        {seat.label}
-                    </div>
-                );
-            })}
-        </div>
-    );
-}
-
 function Legend({ color, label }) {
     return (
         <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
@@ -821,18 +754,4 @@ const rightColumnStyle = {
     display: 'flex',
     flexDirection: 'column',
     justifyContent: 'space-between',
-};
-
-const seatLayoutWrapperStyle = {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginTop: '10px',
-};
-
-const centerBlockStyle = {
-    width: '50%',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
 };

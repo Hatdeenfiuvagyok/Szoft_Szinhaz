@@ -101,7 +101,7 @@
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <version>3.2.2</version>
                 <configuration>
-                    <mainClass>org.theater.bookingtheater.MainApplication</mainClass>
+                    <mainClass>org.theater.bookingtheater.BookingTheaterApplication</mainClass>
                 </configuration>
             </plugin>
         </plugins>

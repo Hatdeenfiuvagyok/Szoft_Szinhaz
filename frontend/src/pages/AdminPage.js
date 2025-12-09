@@ -1,12 +1,12 @@
 import React, { useState } from "react";
-import Layout from "./Layout";
-import AdminReservationTable from "./AdminReservationTable";
+import Layout from "../pages/Layout";
+import AdminReservationTable from "../pages/AdminReservationTable";
 
 export default function AdminPage() {
     const [authenticated, setAuthenticated] = useState(false);
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
-    const [editPerformance, setEditPerformance] = useState(null);
+    const [setEditPerformance] = useState(null);
 
     // Hardcoded admin login adatok
     const ADMIN_USER = "admin";

@@ -1,9 +1,9 @@
-//  CsokonaiPage.jsx
+// VidamPage.jsx
 import React from 'react';
-import Layout from './Layout';
-import csokonaiImg from './assets/theater1.jpg';
+import Layout from '../pages/Layout';
+import VidamImg from '../assets/theater3.jpg';
 
-export default function CsokonaiPage() {
+export default function VidamPage() {
     return (
         <Layout>
             <div
@@ -23,44 +23,40 @@ export default function CsokonaiPage() {
                              display: 'flex',
                              gap: '20px',
                              alignItems: 'flex-start',
-                             Width: '100%',
+                             width: '100%',
                              minHeight: '400px',
                          }}
                 >
-                    {/*  Nagy kép bal oldalon */}
+                    {/* Nagy kép bal oldalon */}
                     <img
-                        src={csokonaiImg}
-                        alt="Csokonai Színház"
+                        src={VidamImg}
+                        alt="Vidám Színház"
                         style={{
                             width: '50%',
                             minWidth: '350px',
                             borderRadius: '10px',
-                            objectFit: 'cover',
+                            objectFit: 'cover ',
                         }}
                     />
 
                     {/* Jobb oldali rész — hosszú leírás  */}
                     <div style={{ flex: 1, minWidth: '300px' }}>
                         <h1 style={{ fontSize: '24px', marginBottom: '20px'}}>
-                            Csokonai Színház
+                            Vidám Színház
                         </h1>
 
                         <p style={{ fontSize: '15px', lineHeight: 1.7, marginBottom: '20px' }}>
-                            A Csokonai Nemzeti Színház Debrecen egyik legismertebb kulturális
-                            intézménye, mely több mint másfél évszázada meghatározó szereplője
-                            a magyar színházi életnek. Az épület különleges, historizáló
-                            architektúrája és belső tereinek gazdag díszítése a város egyik
-                            ikonikus látványosságává teszi.
+                            A Vidám Színház a könnyed, szórakoztató és humoros színpadi műfajok
+                            egyik legismertebb hazai otthona. Évtizedek óta meghatározó szereplője
+                            a magyar kabaré- és vígjátékhagyománynak, miközben modern, friss
+                            előadásokkal is várja a közönséget.
                         </p>
 
                         <p style={{ fontSize: '15px', lineHeight: 1.7, marginBottom: '20px' }}>
-                            A színház repertoárja széles: klasszikus drámák, modern színházi
-                            alkotások, opera-, balett- és musicalelőadások is helyet kapnak
-                            benne. A művészeti ensemble kiemelt figyelmet fordít arra, hogy
-                            minden korosztály számára értékes és élvezetes produkciókat
-                            kínáljon. Az épületben több játszóhely is működik, amelyek
-                            különböző stílusú és közönségigényű előadásokat tesznek
-                            lehetővé.
+                            A repertoárban klasszikus bohózatok, zenés vígjátékok, családi
+                            előadások és kortárs humoros darabok is megtalálhatók. A társulat célja,
+                            hogy minden látogató valódi kikapcsolódást és jókedvet kapjon —
+                            legyen szó egy pörgős musicalről vagy egy könnyed esti kabaréról.
                         </p>
 
                         <h2 style={{ fontSize: '24px', marginBottom: '10px' }}>
@@ -68,16 +64,16 @@ export default function CsokonaiPage() {
                         </h2>
 
                         <p style={{ marginBottom: '5px', fontSize: '16px' }}>
-                            <strong>Cím:</strong> 4024 Debrecen, Kossuth utca 10.
+                            <strong>Cím:</strong> 4024 Debrecen, Vidám tér 5.
                         </p>
                         <p style={{ marginBottom: '5px', fontSize: '16px' }}>
-                            <strong>Telefon:</strong> +36 52 000 000
+                            <strong>Telefon:</strong> +36 52 111 111
                         </p>
                         <p style={{ marginBottom: '5px', fontSize: '16px' }}>
-                            <strong>Email:</strong> info@csokonaiszinhaz.hu
+                            <strong>Email:</strong> info@vidamszinhaz.hu
                         </p>
                         <p style={{ marginTop: '10px', fontSize: '16px' }}>
-                            A jegyfoglalás a felső menü „Foglalás” menüpontján keresztül érhető el.
+                            Jegyfoglalás a felső menü „Foglalás” menüpontján keresztül érhető el.
                         </p>
                     </div>
                 </div>

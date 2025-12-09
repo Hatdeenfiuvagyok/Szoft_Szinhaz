@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import "./scrollableDiv.css";
+import "../css/scrollableDiv.css";
 
 export default function AdminReservationTable() {
     const [performances, setPerformances] = useState([]);

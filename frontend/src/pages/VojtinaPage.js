@@ -1,7 +1,7 @@
 // VojtinaPage.jsx
 import React from 'react';
-import Layout from './Layout';
-import VojtinaImg from './assets/theater2.jpg';
+import Layout from '../pages/Layout';
+import VojtinaImg from '../assets/theater2.jpg';
 
 export default function VojtinaPage() {
     return (

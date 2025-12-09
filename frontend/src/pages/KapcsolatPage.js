@@ -1,6 +1,6 @@
 import React from 'react';
-import Layout from './Layout';
-import member1Img from './assets/member1Img.jpg';
+import Layout from '../pages/Layout';
+import member1Img from '../assets/member1Img.jpg';
 
 export default function KapcsolatPage() {
     const teamMembers = [
