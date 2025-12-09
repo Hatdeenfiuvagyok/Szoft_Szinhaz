@@ -1,4 +1,4 @@
-// CsokonaiPage.jsx
+//  CsokonaiPage.jsx
 import React from 'react';
 import Layout from './Layout';
 import csokonaiImg from './assets/theater1.jpg';
