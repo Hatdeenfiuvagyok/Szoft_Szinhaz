@@ -9,7 +9,7 @@ export default function KapcsolatPage() {
             name: 'Tóth Gergő',
             phone: '+36 30 111 1111',
             email: 'peter@example.com',
-            role: 'kinda nothing',
+            role: 'kurvara mindent egyedul :)',
         },
         {
             img: member1Img,

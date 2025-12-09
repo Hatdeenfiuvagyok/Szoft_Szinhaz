@@ -4,6 +4,8 @@ import './App.css';
 import theaterImg from './assets/theater.jpg';
 import HomePage from './HomePage';
 import CsokonaiPage from './CsokonaiPage';
+import VojtinaPage from './VojtinaPage';
+import VidamPage from './VidamPage';
 import ReservationPage from './ReservationPage';
 import KapcsolatPage from './KapcsolatPage';
 import AdminPage from './AdminPage';
@@ -73,6 +75,8 @@ function App() {
                     <Route path="/" element={<Home />} />
                     <Route path="/home" element={<HomePage />} />
                     <Route path="/csokonai" element={<CsokonaiPage />} />
+                    <Route path="/Vojtina" element={<VojtinaPage />} />
+                    <Route path="/Vidam" element={<VidamPage />} />
                     <Route path="/kapcsolat" element={<KapcsolatPage />} />
                     <Route path="/reservation" element={<ReservationPage />} />
                     <Route path="/admin-4682-panel" element={<AdminPage />} />

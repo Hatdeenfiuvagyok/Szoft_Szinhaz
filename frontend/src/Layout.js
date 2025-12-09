@@ -107,8 +107,8 @@ export default function Layout({ children }) {
 
     const menuItems = [
         { name: 'Csokonai Színház', path: '/Csokonai' },
-        { name: 'Vojtina Színház', path: '/home' },
-        { name: 'Vidám Színház', path: '/home' },
+        { name: 'Vojtina Színház', path: '/Vojtina' },
+        { name: 'Vidám Színház', path: '/Vidam' },
         { name: 'Foglalás', path: '/reservation' },
         { name: 'Kapcsolat', path: '/Kapcsolat' },
     ];
