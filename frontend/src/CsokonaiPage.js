@@ -27,7 +27,7 @@ export default function CsokonaiPage() {
                              minHeight: '400px',
                          }}
                 >
-                    {/* Nagy kép bal oldalon */}
+                    {/*  Nagy kép bal oldalon */}
                     <img
                         src={csokonaiImg}
                         alt="Csokonai Színház"
