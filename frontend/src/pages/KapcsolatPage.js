@@ -52,7 +52,7 @@ export default function KapcsolatPage() {
                             backgroundColor: 'rgba(0, 0, 0, 0.7)',
                             borderRadius: '15px',
                             padding: '20px',
-                            width: 'calc(25% - 20px)',   // 4 oszlop
+                            width: 'calc(25% - 20px)',
                             minWidth: '250px',
                             textAlign: 'center',
                             boxSizing: 'border-box',
@@ -62,7 +62,7 @@ export default function KapcsolatPage() {
                             src={member.img}
                             alt={member.name}
                             style={{
-                                width: '150px',       // nagyobb kép
+                                width: '150px',
                                 height: '150px',
                                 borderRadius: '50%',
                                 objectFit: 'cover',
