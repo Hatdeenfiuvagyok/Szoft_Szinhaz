@@ -39,7 +39,7 @@ export default function CsokonaiPage() {
                         }}
                     />
 
-                    {/* Jobb oldali rész — hosszú leírás */}
+                    {/* Jobb oldali rész — hosszú leírás  */}
                     <div style={{ flex: 1, minWidth: '300px' }}>
                         <h1 style={{ fontSize: '24px', marginBottom: '20px'}}>
                             Csokonai Színház
