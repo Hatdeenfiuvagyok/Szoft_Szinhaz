@@ -35,7 +35,7 @@ export default function VidamPage() {
                             width: '50%',
                             minWidth: '350px',
                             borderRadius: '10px',
-                            objectFit: 'cover',
+                            objectFit: 'cover ',
                         }}
                     />
 
